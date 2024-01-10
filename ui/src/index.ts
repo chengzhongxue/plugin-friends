@@ -1,23 +1,25 @@
 import { definePlugin } from "@halo-dev/console-shared";
-import HomeView from "./views/HomeView.vue";
+import Friend from "./views/Friend.vue";
 import { IconPlug } from "@halo-dev/components";
 import { markRaw } from "vue";
 
 export default definePlugin({
+  name: "PluginFriends",
   components: {},
   routes: [
     {
       parentName: "Root",
       route: {
-        path: "/example",
-        name: "Example",
-        component: HomeView,
+        path: "/friends",
+        name: "Friends",
+        component: Friend,
         meta: {
-          title: "示例页面",
+          title: "RSS订阅",
           searchable: true,
+          permissions: ["plugin:friends:view"],
           menu: {
-            name: "示例页面",
-            group: "示例分组",
+            name: "RSS订阅",
+            group: "content",
             icon: markRaw(IconPlug),
             priority: 0,
           },
