@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { VCard, VEntity, IconList, IconArrowLeft,IconArrowRight, VEntityField,Dialog,VButton,VEmpty,VLoading,VPagination,Toast, VDropdownItem,  IconAddCircle, VSpace} from "@halo-dev/components";
-import { ref} from "vue";
+import { VCard, VEntity, VStatusDot, IconArrowLeft,IconArrowRight,VAvatar, VEntityField,Dialog,VButton,VEmpty,VLoading,VPagination,Toast, VDropdownItem,  IconAddCircle, VSpace} from "@halo-dev/components";
+import { ref,computed} from "vue";
 import { useFriendFetch} from "@/api/use-friend";
 import type { Friend } from "@/types";
 import service from "@/api/request";
 import { useQueryClient } from "@tanstack/vue-query";
-import { formatDatetime } from "@/utils/date";
+import { formatDatetime,timeAgo } from "@/utils/date";
 import FriendEditingModal from "../components/FriendEditingModal.vue";
 
 const queryClient = useQueryClient();
@@ -47,6 +47,9 @@ const handleDelete = (friend: Friend) => {
     onConfirm: async () => {
       try {
         await service.delete(
+          `/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/delByLink/${friend.metadata.name}`
+        )
+        await service.delete(
           `/apis/friend.moony.la/v1alpha1/friends/${friend.metadata.name}`
         );
 
@@ -67,7 +70,11 @@ const handleDeleteInBatch = () => {
     confirmType: "danger",
     onConfirm: async () => {
       try {
+
         const promises = selectedFriends.value.map((friend) => {
+          service.delete(
+            `/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/delByLink/${friend}`
+          )
           return service.delete(`/apis/friend.moony.la/v1alpha1/friends/${friend}`);
         });
         if (promises) {
@@ -132,6 +139,33 @@ const handleOpenCreateModal = (friend: Friend) => {
   editingModal.value = true;
 };
 
+
+const state = computed((props) => {
+  const { status } = props.pushLog;
+  if (status === 1) return "success";
+  if (status === 0) return "warning";
+  return "default";
+});
+
+const getState = (friend: Friend) => {
+  const { spec } = friend;
+  return spec.status == 1 ? "success" : "warning";
+};
+
+const getStateText = (friend: Friend) => {
+  const { spec } = friend;
+  return spec.status == 1 ? "同步成功" : "同步失败";
+};
+
+
+
+// const getStateText = computed(() => {
+//   const { status } = props.pushLog;
+//   if (status === 1) return "成功";
+//   if (status === 0) return "失败";
+//   return "未知";
+// });
+
 </script>
 
 <template>
@@ -181,7 +215,7 @@ const handleOpenCreateModal = (friend: Friend) => {
                 @keyup.enter="keyword = searchText"
               ></FormKit>
             </div>
-            <VSpace v-if="selectedFriends.length">
+            <VSpace v-if="selectedFriends.length" v-permission="['plugin:friends:manage']">
               <VButton type="danger" @click="handleDeleteInBatch">
                 删除
               </VButton>
@@ -235,6 +269,16 @@ const handleOpenCreateModal = (friend: Friend) => {
               </template>
 
               <template #start>
+                <VEntityField>
+                  <template #description>
+                    <VAvatar
+                      :key="friend.metadata.name"
+                      :alt="friend.spec.displayName"
+                      :src="friend.spec.logo"
+                      size="md"
+                    ></VAvatar>
+                  </template>
+                </VEntityField>
                 <VEntityField :title="friend.spec.displayName">
                   <template #description>
                     <a
@@ -249,8 +293,7 @@ const handleOpenCreateModal = (friend: Friend) => {
               </template>
 
               <template #end>
-                <VEntityField
-                >
+                <VEntityField>
                   <template #description>
                     <a
                       :href="friend.spec.link"
@@ -261,6 +304,16 @@ const handleOpenCreateModal = (friend: Friend) => {
                     </a>
                   </template>
                 </VEntityField>
+                <VEntityField v-if="friend.spec.status !=null && friend.spec.status != ''" :description="getStateText(friend)">
+                  <template #description>
+                    <VStatusDot :state="getState(friend)" :text="getStateText(friend)" />
+                  </template>
+                </VEntityField>
+                <VEntityField
+                  v-if="friend.spec.pullTime !=null && friend.spec.pullTime != ''"
+                  v-tooltip="formatDatetime(friend.spec.pullTime)"
+                  :description="'同步时间：'+timeAgo(friend.spec.pullTime)"
+                ></VEntityField>
                 <VEntityField v-if="friend.metadata.deletionTimestamp">
                   <template #description>
                     <VStatusDot
@@ -276,11 +329,11 @@ const handleOpenCreateModal = (friend: Friend) => {
                         "
                 />
               </template>
-              <template #dropdownItems>
-                <VDropdownItem @click="handleOpenCreateModal(friend)">
+              <template #dropdownItems >
+                <VDropdownItem v-permission="['plugin:friends:manage']" @click="handleOpenCreateModal(friend)">
                   编辑
                 </VDropdownItem>
-                <VDropdownItem type="danger" @click="handleDelete(friend)">
+                <VDropdownItem v-permission="['plugin:friends:manage']" type="danger" @click="handleDelete(friend)">
                   删除
                 </VDropdownItem>
               </template>

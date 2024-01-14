@@ -28,6 +28,7 @@ const initialFormState: Friend = {
   },
   spec: {
     displayName: "",
+    logo:"",
     rssUrl: "",
     link: "",
     description: "",
@@ -157,6 +158,7 @@ const handleSaveFriend = async () => {
             validation="required"
             label="订阅地址"
           ></FormKit>
+          <FormKit type="attachment" name="logo" label="Logo"></FormKit>
         </div>
       </div>
     </FormKit>

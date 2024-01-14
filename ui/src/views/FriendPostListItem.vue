@@ -90,7 +90,7 @@ const handleDeleteInBatch = () => {
                 @keyup.enter="keyword = searchText"
               ></FormKit>
             </div>
-            <VSpace v-if="selectedFriendPosts.length">
+            <VSpace v-if="selectedFriendPosts.length" v-permission="['plugin:friends:manage']">
               <VButton type="danger" @click="handleDeleteInBatch">
                 删除
               </VButton>
@@ -130,7 +130,7 @@ const handleDeleteInBatch = () => {
           </thead>
           <tbody>
              <tr v-for="friendPost in friendPosts" class="border-b last:border-none hover:bg-gray-100">
-               <td class="px-4 py-4">
+               <td class="px-4 py-4 ">
                  <input
                    v-model="selectedFriendPosts"
                    :value="friendPost.metadata.name"
@@ -139,8 +139,8 @@ const handleDeleteInBatch = () => {
                    type="checkbox"
                  />
                </td>
-               <td class="px-4 py-4">{{friendPost.spec.author}}</td>
-               <td class="px-4 py-4">
+               <td  class="px-4 py-4 table-td">{{friendPost.spec.author}}</td>
+               <td class="px-4 py-4 table-td">
                  <a
                    :href="friendPost.spec.url"
                    class="hover:text-gray-900"
@@ -150,7 +150,7 @@ const handleDeleteInBatch = () => {
                  </a>
                </td>
                <td class="px-4 py-4">{{friendPost.spec.title}}</td>
-               <td class="px-4 py-4">
+               <td class="px-4 py-4 ant-link">
                  <a
                    :href="friendPost.spec.link"
                    class="hover:text-gray-900"
@@ -159,64 +159,12 @@ const handleDeleteInBatch = () => {
                    {{friendPost.spec.link}}
                  </a>
                </td>
-               <td class="px-4 py-4">{{friendPost.spec.description}}</td>
-               <td class="px-4 py-4">{{formatDatetime(friendPost.spec.pubDate)}}</td>
+               <td class="px-4 py-4 ant-td">{{friendPost.spec.description}}</td>
+               <td class="px-4 py-4 table-td">{{formatDatetime(friendPost.spec.pubDate)}}</td>
              </tr>
           </tbody>
         </table>
       </div>
-      
-<!--      <ul class="box-border h-full w-full divide-y divide-gray-100" role="list">-->
-<!--        <li v-for="friendPost in friendPosts" >-->
-<!--          <VEntity :is-selected="selectedFriendPosts.includes(friendPost.metadata.name)">-->
-<!--            <template #checkbox>-->
-<!--              <input-->
-<!--                v-model="selectedFriendPosts"-->
-<!--                :value="friendPost.metadata.name"-->
-<!--                class="h-4 w-4 rounded border-gray-300 text-indigo-600"-->
-<!--                name="post-checkbox"-->
-<!--                type="checkbox"-->
-<!--              />-->
-<!--            </template>-->
-
-<!--            <template #start>-->
-<!--              <VEntityField :title="friendPost.spec.author">-->
-<!--                <template #description>-->
-<!--                  <a-->
-<!--                    :href="friendPost.spec.url"-->
-<!--                    class="truncate text-xs text-gray-500 hover:text-gray-900"-->
-<!--                    target="_blank"-->
-<!--                  >-->
-<!--                    {{ friendPost.spec.url }}-->
-<!--                  </a>-->
-<!--                </template>-->
-<!--              </VEntityField>-->
-<!--              <VEntityField>-->
-<!--                <div class="entity-field-description-body">-->
-<!--                  <div class="flex flex-col gap-2">-->
-<!--                    <div class="mb-1 flex items-center gap-2">-->
-<!--                      <a-->
-<!--                        :href="friendPost.spec.link"-->
-<!--                        class="line-clamp-2 inline-block text-sm font-medium text-gray-900 hover:text-gray-600"-->
-<!--                        target="_blank"-->
-<!--                      >-->
-<!--                        {{ friendPost.spec.title }}-->
-<!--                      </a>-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                </div>-->
-<!--              </VEntityField>-->
-<!--              <VEntityField :title="friendPost.spec.description">-->
-<!--              </VEntityField>-->
-<!--            </template>-->
-
-<!--            <template #end>-->
-<!--              <VEntityField :description="formatDatetime(friendPost.spec.pubDate)"/>-->
-<!--            </template>-->
-
-<!--          </VEntity>-->
-<!--        </li>-->
-<!--      </ul>-->
     </Transition>
 
     <template #footer>
@@ -232,5 +180,36 @@ const handleDeleteInBatch = () => {
 </template>
 
 <style scoped lang="scss">
+
+.table-td {
+  text-align: left !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-link {
+  max-width: 250px;
+  border-bottom: 0;
+  text-align: left !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-td {
+  max-width: 410px;
+  border-bottom: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  padding-right: 1rem;
+  padding-bottom: 0rem;
+  margin-bottom: 1.1em;
+}
+
 
 </style>

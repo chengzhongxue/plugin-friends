@@ -38,8 +38,11 @@ export interface Friend {
 export interface FriendSpec {
   rssUrl: string;
   displayName?: string;
+  logo?: string;
   link?: string;
   description?: string;
+  status?:number;
+  pullTime?:string;
 }
 
 export interface friendList {
