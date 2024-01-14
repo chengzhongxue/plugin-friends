@@ -251,7 +251,9 @@ public class FriendRouter {
                     return true;
                 }
                 String keywordToSearch = keyword.trim().toLowerCase();
-                return StringUtils.containsAnyIgnoreCase(friend.getSpec().getTitle(),
+                return StringUtils.containsAnyIgnoreCase(friend.getSpec().getAuthor(),
+                    keywordToSearch)
+                    || StringUtils.containsAnyIgnoreCase(friend.getSpec().getTitle(),
                     keywordToSearch)
                     || StringUtils.containsAnyIgnoreCase(friend.getSpec().getDescription(),
                     keywordToSearch)
@@ -264,29 +266,25 @@ public class FriendRouter {
         }
 
         public Comparator<FriendPost> toComparator() {
-            var sort = getSort();
-            var ctOrder = sort.getOrderFor("creationTimestamp");
             List<Comparator<FriendPost>> comparators = new ArrayList<>();
-            if (ctOrder != null) {
-                Comparator<FriendPost> comparator =
-                    comparing(friendPost -> friendPost.getMetadata().getCreationTimestamp());
-                if (ctOrder.isDescending()) {
-                    comparator = comparator.reversed();
-                }
-                comparators.add(comparator);
-            }
-            comparators.add(compareCreationTimestamp(false));
-            comparators.add(compareName(true));
+            // var sort = getSort();
+            // var ctOrder = sort.getOrderFor("pubDate");
+            // if (ctOrder != null) {
+            //     Comparator<FriendPost> comparator =
+            //         comparing(friendPost -> friendPost.getSpec().getPubDate());
+            //     if (ctOrder.isDescending()) {
+            //         comparator = comparator.reversed();
+            //     }
+            //     comparators.add(comparator);
+            // }
+            Comparator<FriendPost> comparator =
+                comparing(friendPost -> friendPost.getSpec().getPubDate());
+            comparators.add(comparator.reversed());
             return comparators.stream()
                 .reduce(Comparator::thenComparing)
                 .orElse(null);
         }
 
-        public static <E extends Extension> Comparator<E> compareCreationTimestamp(boolean asc) {
-            var comparator =
-                Comparator.<E, Instant>comparing(e -> e.getMetadata().getCreationTimestamp());
-            return asc ? comparator : comparator.reversed();
-        }
 
         public static <E extends Extension> Comparator<E> compareName(boolean asc) {
             var comparator = Comparator.<E, String>comparing(e -> e.getMetadata().getName());

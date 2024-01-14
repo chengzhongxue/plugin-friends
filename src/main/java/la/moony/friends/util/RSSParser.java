@@ -6,6 +6,7 @@ import org.w3c.dom.*;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,12 +27,15 @@ public class RSSParser {
         InputStream inputStream = connection.getInputStream();
         Document document = builder.parse(inputStream);
 
+
         // 根节点为<channel>标签
         Element channelElement = (Element)document.getElementsByTagName("channel").item(0);
         String author = getTextValue(channelElement, "title");
         String channelLink = getTextValue(channelElement, "link");
         String channelDescription = getTextValue(channelElement, "description");
         map.put("channelLink",channelLink);
+        map.put("author",author);
+        map.put("channelDescription",channelDescription);
         // 遍历<item>标签获取每条信息
         NodeList itemElements = channelElement.getElementsByTagName("item");
         List<FriendPost> friendPostList = new ArrayList<>();
@@ -41,6 +45,8 @@ public class RSSParser {
             String title = getTextValue(itemElement, "title");
             String link = getTextValue(itemElement, "link");
             String pubDate = getTextValue(itemElement, "pubDate");
+            SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+            Date date = format.parse(pubDate);
             String description = getTextValue(itemElement, "description");
             FriendPost friendPost = new FriendPost();
             friendPost.setSpec(new FriendPost.Spec());
@@ -48,7 +54,7 @@ public class RSSParser {
             friendPost.getSpec().setTitle(title);
             friendPost.getSpec().setAuthor(author);
             friendPost.getSpec().setLink(link);
-            friendPost.getSpec().setPubDate(new Date());
+            friendPost.getSpec().setPubDate(date);
             friendPost.getSpec().setDescription(description);
             friendPostList.add(friendPost);
         }

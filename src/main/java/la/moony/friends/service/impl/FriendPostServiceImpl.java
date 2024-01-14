@@ -7,13 +7,18 @@ import la.moony.friends.finders.FriendFinder;
 import la.moony.friends.service.FriendPostService;
 import la.moony.friends.util.RSSParser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.halo.app.core.extension.content.Post;
 import run.halo.app.extension.ExtensionClient;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.ReactiveExtensionClient;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -41,30 +46,44 @@ public class FriendPostServiceImpl implements FriendPostService {
         RSSParser rssParser = new RSSParser();
 
         Predicate<Friend> paramPredicate = post -> true;
-        log.info("00000001111111");
         Mono<ListResult<Friend>> listResult = client.list(Friend.class, paramPredicate, null, 1, pageSize);
         listResult.subscribe(friends -> {
-            log.info("0000000:"+friends.toString());
             //分页导出数据
             //分页获取并处理
             for (int i = 1; i <= friends.getTotalPages(); i++) {
-                log.info("111111:"+friends.toString());
                 Mono<ListResult<Friend>> friendsPage = client.list(Friend.class, paramPredicate, null, i, pageSize);
-
                 friendsPage.subscribe(friend -> {
                     friend.getItems().forEach(f->{
-                        log.info("22222:"+f.toString());
                         try {
                             Map<String, Object> data = rssParser.data(f.getSpec().getRssUrl());
+                            String author = (String)data.get("author");
+                            String channelLink = (String)data.get("channelLink");
+                            String channelDescription = (String) data.get("channelDescription");
+                            f.getSpec().setLink(channelLink);
+                            f.getSpec().setDescription(channelDescription);
+                            f.getSpec().setDisplayName(author);
+                            //保存帖子数据
                             List<FriendPost> friendPostList = (List<FriendPost>) data.get("friendPostList");
-                            friendPostList.forEach(post -> {
-                                // 设置元数据才能保存
-                                FriendPost friendPost = new FriendPost();
-                                friendPost.setMetadata(new Metadata());
-                                friendPost.getMetadata().setGenerateName("friendPost-");
-                                friendPost.setSpec(post.getSpec());
-                                client.create(friendPost);
-                            });
+                            if (friendPostList.size()>0){
+                                //删除之前数据
+                                client.list(FriendPost.class,
+                                        friendPost -> StringUtils.equals(friendPost.getSpec().getUrl(), channelLink), null)
+                                    .flatMap(client::delete).subscribe();
+                                friendPostList.forEach(post -> {
+                                    FriendPost.Spec spec = post.getSpec();
+                                    // 设置元数据才能保存
+                                    FriendPost friendPost = new FriendPost();
+                                    friendPost.setMetadata(new Metadata());
+                                    friendPost.getMetadata().setGenerateName("friendPost-");
+                                    spec.setLogo(f.getSpec().getLogo());
+                                    friendPost.setSpec(spec);
+                                    client.create(friendPost).subscribe();
+                                });
+                                f.getSpec().setStatus(1);
+                                f.getSpec().setPullTime(new Date());
+                                client.update(f).subscribe();
+                            }
+
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -73,50 +92,6 @@ public class FriendPostServiceImpl implements FriendPostService {
             }
         });
 
-
-        // List<Friend> listResult = client.list(Friend.class, paramPredicate, defaultFriendComparator());
-        // listResult.forEach(friend -> {
-        //     log.info(friend.toString());
-        // });
-
-
-        // friends.forEach(friend -> {
-        //     try {
-        //         Map<String, Object> data = rssParser.data(friend.getSpec().getRssUrl());
-        //         List<FriendPost> friendPostList = (List<FriendPost>) data.get("friendPostList");
-        //         log.info("friendPostList："+friendPostList.toString());
-        //         friendPostList.forEach(post -> {
-        //             // 设置元数据才能保存
-        //             post.setMetadata(new Metadata());
-        //             post.getMetadata().setGenerateName("friendPost-");
-        //             post.getMetadata().setName(LocalDateTime.now().toString());
-        //             FriendPost friendPost = new FriendPost();
-        //             friendPost.setMetadata(new Metadata());
-        //             friendPost.getMetadata().setGenerateName("friendPost-");
-        //             friendPost.setSpec(post.getSpec());
-        //             client.create(friendPost);
-        //         });
-        //     } catch (Exception e) {
-        //         throw new RuntimeException(e);
-        //     }
-        // });
-        // try {
-        //     Map<String, Object> data = rssParser.data("https://moony.la/rss.xml");
-        //     List<FriendPost> friendPostList = (List<FriendPost>) data.get("friendPostList");
-        //     friendPostList.forEach(post -> {
-        //         //设置元数据才能保存
-        //         post.setMetadata(new Metadata());
-        //         post.getMetadata().setGenerateName("friendPost-");
-        //         post.getMetadata().setName(LocalDateTime.now().toString());
-        //         FriendPost friendPost = new FriendPost();
-        //         friendPost.setMetadata(new Metadata());
-        //         friendPost.getMetadata().setGenerateName("friendPost-");
-        //         friendPost.setSpec(post.getSpec());
-        //         client.create(friendPost);
-        //     });
-        // } catch (Exception e) {
-        //     throw new RuntimeException(e);
-        // }
 
 
     }

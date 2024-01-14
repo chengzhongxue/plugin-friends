@@ -23,6 +23,8 @@ public class FriendPost extends AbstractExtension {
 
         private String author;
 
+        private String logo;
+
         private String title;
 
         private String link;

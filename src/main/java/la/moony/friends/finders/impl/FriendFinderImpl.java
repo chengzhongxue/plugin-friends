@@ -3,6 +3,7 @@ package la.moony.friends.finders.impl;
 import jakarta.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Function;
@@ -71,8 +72,7 @@ public class FriendFinderImpl implements FriendFinder {
 
     @Override
     public Flux<FriendPostVo> listByUrl(String url) {
-        return friendPostList(post -> StringUtils.equals(post.getSpec().getUrl(), url)
-            && post.getMetadata().getDeletionTimestamp() != null)
+        return friendPostList(post -> StringUtils.equals(post.getSpec().getUrl(), url))
             .map(FriendPostVo::from);
     }
 
@@ -121,9 +121,8 @@ public class FriendFinderImpl implements FriendFinder {
     }
 
     private Comparator<FriendPost> defaultComparator() {
-        Function<FriendPost, Instant> pubDate =
-            friendPost -> friendPost.getMetadata()
-                .getCreationTimestamp();
+        Function<FriendPost, Date> pubDate =
+            friendPost -> friendPost.getSpec().getPubDate();
         Function<FriendPost, String> name = post -> post.getMetadata().getName();
         return Comparator.comparing(pubDate, Comparators.nullsLow())
             .thenComparing(name)
