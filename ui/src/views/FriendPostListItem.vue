@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { VCard, VEntity, VEntityField,Dialog,VButton,VEmpty,VLoading,VPagination,Toast, VSpace, VDropdownItem} from "@halo-dev/components";
+import { VCard, VEntity, VEntityField,IconRefreshLine,Dialog,VButton,VEmpty,VLoading,VPagination,Toast, VSpace, VDropdownItem} from "@halo-dev/components";
 import { useQueryClient } from "@tanstack/vue-query";
 import {useFriendPostFetch} from "@/api/use-friend";
 import { ref } from "vue";
@@ -94,6 +94,22 @@ const handleDeleteInBatch = () => {
               <VButton type="danger" @click="handleDeleteInBatch">
                 删除
               </VButton>
+            </VSpace>
+          </div>
+          <div class="mt-4 flex sm:mt-0">
+            <VSpace spacing="lg">
+              <div class="flex flex-row gap-2">
+                <div
+                  class="group cursor-pointer rounded p-1 hover:bg-gray-200"
+                  @click="refetch()"
+                >
+                  <IconRefreshLine
+                    v-tooltip="`刷新`"
+                    :class="{ 'animate-spin text-gray-900': isLoading }"
+                    class="h-4 w-4 text-gray-600 group-hover:text-gray-900"
+                  />
+                </div>
+              </div>
             </VSpace>
           </div>
         </div>

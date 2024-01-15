@@ -2,6 +2,7 @@
 import {markRaw, ref, shallowRef} from "vue";
 import FriendPostListItem from "@/views/FriendPostListItem.vue";
 import FriendListItem from "@/views/FriendListItem.vue";
+import Cron from "@/views/Cron.vue";
 import { useRouteQuery } from "@vueuse/router";
 import { synchronizationRss} from "@/api/rss";
 
@@ -15,6 +16,11 @@ import {
 
 const tabs = shallowRef([
   {
+    id: "cron",
+    label: "定时任务",
+    component: markRaw(Cron),
+  },
+  {
     id: "friend",
     label: "订阅",
     component: markRaw(FriendListItem),
@@ -24,6 +30,7 @@ const tabs = shallowRef([
     label: "订阅帖子",
     component: markRaw(FriendPostListItem),
   },
+  
 ]);
 
 const activeIndex = useRouteQuery<string>("tab", tabs.value[0].id);
@@ -60,6 +67,7 @@ const handleCreate = () => {
       <div class="bg-white">
         <FriendPostListItem ref="friendPost" v-if="activeIndex=='friendPost'"/>
         <FriendListItem ref="friend" v-if="activeIndex=='friend'"/>
+        <Cron ref="cron" v-if="activeIndex=='cron'"/>
       </div>
     </VCard>
   </div>

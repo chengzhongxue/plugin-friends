@@ -88,6 +88,39 @@ export interface FriendPost {
   metadata: Metadata;
 }
 
+export interface CronFriendPost {
+  spec: CronFriendPostSpec;
+  status?: CronFriendPostStatus
+  apiVersion: string;
+  kind: string;
+  metadata: Metadata;
+}
+
+export interface CronFriendPostSpec {
+  cron?: string;
+  timezone?: string;
+  suspend?: boolean;
+  successfulRetainLimit?: number;
+}
+
+export interface CronFriendPostStatus {
+  lastScheduledTimestamp?: number;
+  nextSchedulingTimestamp?: number;
+}
+
+
+export interface CronFriendPostList {
+  page: number;
+  size: number;
+  total: number;
+  items: Array<CronFriendPost>;
+  first: boolean;
+  last: boolean;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  totalPages: number;
+}
+
 
 
 

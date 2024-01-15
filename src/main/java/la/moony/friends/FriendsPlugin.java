@@ -1,5 +1,6 @@
 package la.moony.friends;
 
+import la.moony.friends.extension.CronFriendPost;
 import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
 import org.pf4j.PluginWrapper;
@@ -26,11 +27,13 @@ public class FriendsPlugin extends BasePlugin {
     public void start() {
         schemeManager.register(Friend.class);
         schemeManager.register(FriendPost.class);
+        schemeManager.register(CronFriendPost.class);
     }
 
     @Override
     public void stop() {
         schemeManager.unregister(schemeManager.get(Friend.class));
         schemeManager.unregister(schemeManager.get(FriendPost.class));
+        schemeManager.unregister(schemeManager.get(CronFriendPost.class));
     }
 }

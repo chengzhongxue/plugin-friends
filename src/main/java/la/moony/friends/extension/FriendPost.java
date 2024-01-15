@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import run.halo.app.extension.AbstractExtension;
 import run.halo.app.extension.GVK;
+import java.time.Instant;
 import java.util.Date;
 
 @Data
@@ -31,7 +32,9 @@ public class FriendPost extends AbstractExtension {
 
         private String description;
 
-        private Date pubDate;
+        private Instant pubDate;
+
+
     }
 
 }

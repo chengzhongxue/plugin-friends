@@ -34,4 +34,7 @@ public interface FriendFinder {
     Mono<FriendVo> friendGet(String friendName);
 
     Flux<FriendPostVo> listByUrl(String url);
+
+    Flux<FriendPostVo> listByAuthor(String author);
+
 }

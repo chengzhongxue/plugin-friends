@@ -15,7 +15,7 @@ export const synchronizationRss = () => {
             Toast.success("同步RSS数据成功");
           });
       } catch (e) {
-        console.error("Failed to submit exportLog", e);
+        console.error("", e);
       }
     },
   });

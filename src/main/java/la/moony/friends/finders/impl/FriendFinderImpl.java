@@ -76,6 +76,12 @@ public class FriendFinderImpl implements FriendFinder {
             .map(FriendPostVo::from);
     }
 
+    @Override
+    public Flux<FriendPostVo> listByAuthor(String author) {
+        return friendPostList(post -> StringUtils.equals(post.getSpec().getAuthor(), author))
+            .map(FriendPostVo::from);
+    }
+
 
 
     @Override
@@ -121,7 +127,7 @@ public class FriendFinderImpl implements FriendFinder {
     }
 
     private Comparator<FriendPost> defaultComparator() {
-        Function<FriendPost, Date> pubDate =
+        Function<FriendPost, Instant> pubDate =
             friendPost -> friendPost.getSpec().getPubDate();
         Function<FriendPost, String> name = post -> post.getMetadata().getName();
         return Comparator.comparing(pubDate, Comparators.nullsLow())

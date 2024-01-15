@@ -1,6 +1,7 @@
 package la.moony.friends.service.impl;
 
 
+import la.moony.friends.extension.CronFriendPost;
 import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
 import la.moony.friends.finders.FriendFinder;
@@ -9,18 +10,15 @@ import la.moony.friends.util.RSSParser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.halo.app.core.extension.content.Post;
-import run.halo.app.extension.ExtensionClient;
+import run.halo.app.extension.ExtensionUtil;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.ReactiveExtensionClient;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 @Component
@@ -56,29 +54,55 @@ public class FriendPostServiceImpl implements FriendPostService {
                     friend.getItems().forEach(f->{
                         try {
                             Map<String, Object> data = rssParser.data(f.getSpec().getRssUrl());
-                            String author = (String)data.get("author");
-                            String channelLink = (String)data.get("channelLink");
-                            String channelDescription = (String) data.get("channelDescription");
-                            f.getSpec().setLink(channelLink);
-                            f.getSpec().setDescription(channelDescription);
-                            f.getSpec().setDisplayName(author);
                             //保存帖子数据
                             List<FriendPost> friendPostList = (List<FriendPost>) data.get("friendPostList");
                             if (friendPostList.size()>0){
+                                String author = (String)data.get("author");
+                                String channelLink = (String)data.get("channelLink");
+                                String channelDescription = (String) data.get("channelDescription");
+                                f.getSpec().setLink(channelLink);
+                                f.getSpec().setDescription(channelDescription);
+                                f.getSpec().setDisplayName(author);
                                 //删除之前数据
                                 client.list(FriendPost.class,
                                         friendPost -> StringUtils.equals(friendPost.getSpec().getUrl(), channelLink), null)
                                     .flatMap(client::delete).subscribe();
-                                friendPostList.forEach(post -> {
-                                    FriendPost.Spec spec = post.getSpec();
-                                    // 设置元数据才能保存
-                                    FriendPost friendPost = new FriendPost();
-                                    friendPost.setMetadata(new Metadata());
-                                    friendPost.getMetadata().setGenerateName("friendPost-");
-                                    spec.setLogo(f.getSpec().getLogo());
-                                    friendPost.setSpec(spec);
-                                    client.create(friendPost).subscribe();
-                                });
+                                client.fetch(CronFriendPost.class,"cron-default")
+                                    .flatMap(cronFriendPost -> {
+                                        int successfulRetainLimit = 0;
+                                        if (ExtensionUtil.isDeleted(cronFriendPost)){
+                                            successfulRetainLimit = 0;
+                                        }else {
+                                            successfulRetainLimit = cronFriendPost.getSpec().getSuccessfulRetainLimit();
+                                            if (successfulRetainLimit!=0){
+                                                if (friendPostList.size()<successfulRetainLimit){
+                                                    successfulRetainLimit = friendPostList.size();
+                                                }
+                                            }else if(successfulRetainLimit==0)  {
+                                                successfulRetainLimit = friendPostList.size();
+                                            }
+                                        }
+                                        for (int a = 0; a < successfulRetainLimit; a++) {
+                                            FriendPost friendPost = friendPostList.get(a);
+                                            // 设置元数据才能保存
+                                            friendPost.setMetadata(new Metadata());
+                                            friendPost.getMetadata().setGenerateName("friendPost-");
+                                            friendPost.getSpec().setLogo(f.getSpec().getLogo());
+                                            client.create(friendPost).subscribe();
+                                        }
+
+                                    return Mono.empty();
+                                }).subscribe();
+                                // friendPostList.forEach(post -> {
+                                //     FriendPost.Spec spec = post.getSpec();
+                                //     // 设置元数据才能保存
+                                //     FriendPost friendPost = new FriendPost();
+                                //     friendPost.setMetadata(new Metadata());
+                                //     friendPost.getMetadata().setGenerateName("friendPost-");
+                                //     spec.setLogo(f.getSpec().getLogo());
+                                //     friendPost.setSpec(spec);
+                                //     client.create(friendPost).subscribe();
+                                // });
                                 f.getSpec().setStatus(1);
                                 f.getSpec().setPullTime(new Date());
                                 client.update(f).subscribe();
