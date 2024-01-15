@@ -4,7 +4,10 @@ import javax.xml.parsers.*;
 import la.moony.friends.extension.FriendPost;
 import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -23,34 +26,41 @@ import java.util.Map;
 @Slf4j
 public class RSSParser {
 
-    public Map<String,Object> data(String rssUrl) throws Exception {
+    public Map<String,Object> data(String rssUrl){
         Map<String,Object> map = new HashMap<>();
 
         // 创建DocumentBuilder对象
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
         // 读取XML文件
-        URL url = new URL(rssUrl);
-        URLConnection connection = url.openConnection();
-        InputStream inputStream = connection.getInputStream();
-        Document document = builder.parse(inputStream);
-        NodeList channel = document.getElementsByTagName("channel");
-        NodeList feed = document.getElementsByTagName("feed");
-        if (channel.getLength()>0){
-            channelElement(map,document);
-        }else if(feed.getLength()>0){
-            feedElement(map,document);
-        }else {
-            log.info("按W3C标准规则获取");
+        log.error("订阅rss链接 {} ", rssUrl);
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            URL url = new URL(rssUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            if (connection.getResponseCode() == 200) {
+                InputStream inputStream = connection.getInputStream();
+                Document document = builder.parse(inputStream);
+                NodeList channel = document.getElementsByTagName("channel");
+                NodeList feed = document.getElementsByTagName("feed");
+                if (channel.getLength()>0){
+                    channelElement(map,document);
+                }else if(feed.getLength()>0){
+                    feedElement(map,document);
+                }else {
+                    log.error("{} 当前链接不是W3C标准规则", rssUrl);
+                }
+            }else {
+                log.error("{} 订阅rss链接访问失败", rssUrl);
+            }
+        } catch (Exception  e) {
+            throw new RuntimeException(e);
         }
 
 
         return map;
     }
 
-    private static void feedElement(Map<String,Object> map,Document document )
-        throws ParseException {
+    private static void feedElement(Map<String,Object> map,Document document ) {
         List<FriendPost> friendPostList = new ArrayList<>();
         Element feedlElement = (Element)document.getElementsByTagName("feed").item(0);
         String author = getTextValue(feedlElement, "title");
@@ -95,8 +105,7 @@ public class RSSParser {
 
 
     // 根节点为<channel>标签
-    private static void channelElement(Map<String,Object> map,Document document )
-        throws ParseException {
+    private static void channelElement(Map<String,Object> map,Document document ) {
         List<FriendPost> friendPostList = new ArrayList<>();
         Element channelElement = (Element)document.getElementsByTagName("channel").item(0);
         String author = getTextValue(channelElement, "title");
@@ -115,7 +124,12 @@ public class RSSParser {
             String link = getTextValue(itemElement, "link");
             String pubDate = getTextValue(itemElement, "pubDate");
             SimpleDateFormat  format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-            Date date = format.parse(pubDate);
+            Date date = null;
+            try {
+                date = format.parse(pubDate);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             String description = getTextValue(itemElement, "description");
             FriendPost friendPost = new FriendPost();
             friendPost.setSpec(new FriendPost.Spec());
