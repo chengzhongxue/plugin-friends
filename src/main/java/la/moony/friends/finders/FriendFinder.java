@@ -2,6 +2,7 @@ package la.moony.friends.finders;
 
 import la.moony.friends.vo.FriendPostVo;
 import la.moony.friends.vo.FriendVo;
+import la.moony.friends.vo.StatisticalVo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListResult;
@@ -35,6 +36,14 @@ public interface FriendFinder {
 
     Flux<FriendPostVo> listByUrl(String url);
 
+    Mono<ListResult<FriendPostVo>> listByUrl(Integer page, Integer size,String url);
+
+
     Flux<FriendPostVo> listByAuthor(String author);
+
+    Mono<StatisticalVo> statistical();
+
+
+
 
 }

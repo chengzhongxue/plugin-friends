@@ -37,6 +37,7 @@ const formSchema = ref(
       name: 'suspend',
       label: '是否启用',
       value: false,
+      help: '定时获取RSS订阅数据'
     },
     {
       $cmp: 'FormKit',

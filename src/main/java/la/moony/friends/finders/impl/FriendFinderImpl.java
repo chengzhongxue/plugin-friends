@@ -3,7 +3,6 @@ package la.moony.friends.finders.impl;
 import jakarta.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Function;
@@ -12,6 +11,7 @@ import la.moony.friends.extension.FriendPost;
 import la.moony.friends.finders.FriendFinder;
 import la.moony.friends.vo.FriendPostVo;
 import la.moony.friends.vo.FriendVo;
+import la.moony.friends.vo.StatisticalVo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,15 +60,19 @@ public class FriendFinderImpl implements FriendFinder {
 
     @Override
     public Mono<ListResult<FriendPostVo>> list(Integer page, Integer size) {
-        return pageFriendPost(page, size, defaultComparator());
+        return pageFriendPost(page, size,null, defaultComparator());
     }
 
 
     @Override
     public Mono<ListResult<FriendVo>> friendList(Integer page, Integer size) {
-        return pageFriend(page, size, defaultFriendComparator());
+        return pageFriend(page, size,null, defaultFriendComparator());
     }
 
+    @Override
+    public Mono<ListResult<FriendPostVo>> listByUrl(Integer page, Integer size,String url) {
+        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getUrl(), url), defaultComparator());
+    }
 
     @Override
     public Flux<FriendPostVo> listByUrl(String url) {
@@ -82,6 +86,19 @@ public class FriendFinderImpl implements FriendFinder {
             .map(FriendPostVo::from);
     }
 
+    @Override
+    public Mono<StatisticalVo> statistical() {
+        return Mono.just(StatisticalVo.empty()).flatMap(statisticalVo -> friendCount()
+            .doOnNext(statisticalVo::setFriendsNum)
+            .thenReturn(statisticalVo)
+        ).flatMap(statisticalVo -> friendPostCount()
+            .doOnNext(statisticalVo::setArticleNum)
+            .thenReturn(statisticalVo)
+        )
+        .flatMap(statisticalVo -> friendSucceedCount()
+            .doOnNext(statisticalVo::setActiveNum)
+            .thenReturn(statisticalVo));
+    }
 
 
     @Override
@@ -100,8 +117,9 @@ public class FriendFinderImpl implements FriendFinder {
 
 
     private Mono<ListResult<FriendPostVo>> pageFriendPost(Integer page, Integer size,
+        @Nullable Predicate<FriendPost> predicate,
         Comparator<FriendPost> comparator) {
-        return client.list(FriendPost.class, null, comparator,
+        return client.list(FriendPost.class, predicate, comparator,
                 pageNullSafe(page), sizeNullSafe(size))
             .flatMap(list -> Flux.fromStream(list.get())
                 .concatMap(this::getFriendPostVo)
@@ -113,8 +131,10 @@ public class FriendFinderImpl implements FriendFinder {
             .defaultIfEmpty(new ListResult<>(page, size, 0L, List.of()));
     }
 
-    private Mono<ListResult<FriendVo>> pageFriend(Integer page, Integer size, Comparator<Friend> comparator) {
-        return client.list(Friend.class, null, comparator,
+    private Mono<ListResult<FriendVo>> pageFriend(Integer page, Integer size,
+        @Nullable Predicate<Friend> predicate,
+        Comparator<Friend> comparator) {
+        return client.list(Friend.class, predicate, comparator,
                 pageNullSafe(page), sizeNullSafe(size))
             .flatMap(list -> Flux.fromStream(list.get())
                 .concatMap(this::getFriendVo)
@@ -163,5 +183,33 @@ public class FriendFinderImpl implements FriendFinder {
 
     int sizeNullSafe(Integer size) {
         return ObjectUtils.defaultIfNull(size, 10);
+    }
+
+
+
+
+    public Mono<Integer> friendCount() {
+        return client.list(Friend.class, null, null)
+            .count()
+            .map(Long::intValue);
+    }
+
+    public Mono<Integer> friendSucceedCount() {
+        return client.list(Friend.class, friend -> {
+            if (friend.getSpec().getStatus()!=null){
+                if (friend.getSpec().getStatus() == 1){
+                    return true;
+                }
+            }
+            return false;
+            }, null)
+            .count()
+            .map(Long::intValue);
+    }
+
+    public Mono<Integer> friendPostCount() {
+        return client.list(FriendPost.class, null, null)
+            .count()
+            .map(Long::intValue);
     }
 }

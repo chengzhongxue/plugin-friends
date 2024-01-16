@@ -1,6 +1,6 @@
 import { definePlugin } from "@halo-dev/console-shared";
 import Friend from "./views/Friend.vue";
-import { IconPlug } from "@halo-dev/components";
+import { IconLink } from "@halo-dev/components";
 import { markRaw } from "vue";
 
 export default definePlugin({
@@ -20,7 +20,7 @@ export default definePlugin({
           menu: {
             name: "RSS订阅",
             group: "content",
-            icon: markRaw(IconPlug),
+            icon: markRaw(IconLink),
             priority: 0,
           },
         },

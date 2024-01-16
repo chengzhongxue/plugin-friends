@@ -157,6 +157,7 @@ const handleSaveFriend = async () => {
             name="rssUrl"
             validation="required"
             label="订阅地址"
+            help="W3C标准规则"
           ></FormKit>
           <FormKit type="attachment" name="logo" label="Logo"></FormKit>
         </div>
