@@ -27,8 +27,8 @@ RSS订阅管理插件, 支持在 Console 进行管理以及为主题端提供 `/
 * statistical
 
 ### 变量类型
-* UrlContextListResult<FriendPostVo>
-* StatisticalVo
+* UrlContextListResult<[FriendPostVo](#FriendPostVo)>
+* [StatisticalVo](#StatisticalVo)
 
 #### 示例
 ```bash
@@ -70,7 +70,7 @@ RSS订阅管理插件, 支持在 Console 进行管理以及为主题端提供 `/
 无
 
 #### 返回值
-List<#FriendPostVo>
+List<[FriendPostVo](#FriendPostVo)>
 
 #### 示例
 
@@ -130,7 +130,7 @@ List<#FriendPostVo>
 无
 
 #### 返回值
-#StatisticalVo
+[StatisticalVo](#StatisticalVo)
 
 #### 示例
 
