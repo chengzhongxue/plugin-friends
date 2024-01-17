@@ -11,7 +11,7 @@ spec:
           label: 页面标题
           name: title
           validation: required
-          value: '朋友圈'
+          value: '友链朋友圈'
         - $formkit: text
           label: 朋友圈列表显示条数
           name: pageSize

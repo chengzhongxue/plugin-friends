@@ -6,6 +6,7 @@ import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
 import la.moony.friends.finders.FriendFinder;
 import la.moony.friends.vo.FriendPostVo;
+import la.moony.friends.vo.StatisticalVo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -16,6 +17,7 @@ import org.springframework.util.comparator.Comparators;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebExchange;
@@ -26,6 +28,7 @@ import run.halo.app.extension.ListResult;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.extension.router.IListRequest;
 import run.halo.app.plugin.ReactiveSettingFetcher;
+import run.halo.app.theme.TemplateNameResolver;
 import run.halo.app.theme.router.PageUrlUtils;
 import org.springframework.data.domain.Sort;
 import run.halo.app.theme.router.UrlContextListResult;
@@ -55,13 +58,15 @@ public class FriendRouter {
     private final FriendFinder friendFinder;
     private final ReactiveExtensionClient client;
 
+    private final TemplateNameResolver templateNameResolver;
+
     private final ReactiveSettingFetcher settingFetcher;
     private final String friendTag = "api.plugin.halo.run/v1alpha1/Friend";
     private final String friendPostTag = "api.plugin.halo.run/v1alpha1/FriendPost";
 
     @Bean
     RouterFunction<ServerResponse> friendTemplateRoute() {
-        return route(GET("/friends"),handlerFunction());
+        return RouterFunctions.route().GET("/friends",this::handlerFunction).build();
     }
 
 
@@ -292,10 +297,20 @@ public class FriendRouter {
         }
     }
 
-    private HandlerFunction<ServerResponse> handlerFunction() {
-        return request -> ServerResponse.ok().render("friends",
-            java.util.Map.of("friends", friendList(request))
-        );
+    private Mono<ServerResponse> handlerFunction(ServerRequest request) {
+        return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "friends")
+            .flatMap( templateName -> ServerResponse.ok().render(templateName,
+                java.util.Map.of("friends", friendList(request),"title",getFriendTitle(),"statistical",getStatistical())));
+    }
+
+    Mono<StatisticalVo> getStatistical(){
+        return friendFinder.statistical();
+    }
+
+    Mono<String> getFriendTitle() {
+        return this.settingFetcher.get("base").map(
+            setting -> setting.get("title").asText("友链朋友圈")).defaultIfEmpty(
+            "友链朋友圈");
     }
 
 

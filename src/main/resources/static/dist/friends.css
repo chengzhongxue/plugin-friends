@@ -124,7 +124,7 @@
   right: .5rem;
   font-style: italic;
   font-size: 3rem;
-  line-height: 1.5rem;
+  line-height: 2.3rem;
   z-index: 1;
   font-weight: 400
 }
@@ -319,6 +319,7 @@
   flex-direction: column;
   text-align: center;
   overflow: hidden;
+  padding-inline: 1em;
 }
 
 .content {
@@ -328,15 +329,15 @@
   border-bottom: 1px solid var(--light-background-secondary);
 }
 
-.post:first-of-type {
-  margin: 0 auto 40px;
-}
+/*.post:first-of-type {*/
+/*  margin: 0 auto 40px;*/
+/*}*/
 
 .post {
   width: 100%;
   max-width: 1000px;
   text-align: left;
-  padding: 20px 20px 40px;
+  /*padding: 20px 20px 40px;*/
   margin: 40px auto;
 }
 
