@@ -7,10 +7,10 @@ spec:
   requires: ">=2.11.0"
   author:
     name: 困困鱼
-    website: https://moony.la
-  logo: https://halo.run/logo
+    website: https://github.com/chengzhongxue
+  logo: logo.png
   homepage: https://github.com/chengzhongxue/plugin-friends
-  configMapName: plugin-friends-configmap
+  configMapName: plugin-friends-configMap
   settingName: plugin-friends-settings
   displayName: "RSS订阅"
   description: "RSS订阅管理模块，按W3C标准规则获取"

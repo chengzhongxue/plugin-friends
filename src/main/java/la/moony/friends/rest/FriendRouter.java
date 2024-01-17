@@ -13,8 +13,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
-import org.springframework.util.comparator.Comparators;
-import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -32,20 +30,12 @@ import run.halo.app.theme.TemplateNameResolver;
 import run.halo.app.theme.router.PageUrlUtils;
 import org.springframework.data.domain.Sort;
 import run.halo.app.theme.router.UrlContextListResult;
-
 import static java.util.Comparator.comparing;
 import static run.halo.app.extension.router.QueryParamBuildUtil.buildParametersFromType;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
-
-import java.util.Map;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.Map;
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static run.halo.app.theme.router.PageUrlUtils.totalPage;
 import run.halo.app.extension.Extension;
 import java.time.Instant;
@@ -66,7 +56,8 @@ public class FriendRouter {
 
     @Bean
     RouterFunction<ServerResponse> friendTemplateRoute() {
-        return RouterFunctions.route().GET("/friends",this::handlerFunction).build();
+        return RouterFunctions.route().GET("/friends",this::handlerFunction)
+            .GET("/friends/page/{page:\\d+}",this::handlerFunction).build();
     }
 
 

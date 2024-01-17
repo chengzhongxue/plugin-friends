@@ -21,7 +21,7 @@ import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.plugin.ApiVersion;
 
 /**
- * RSS订阅接口
+ * RSS订阅文章接口
  *
  * @author moony
  * @url https://moony.la
