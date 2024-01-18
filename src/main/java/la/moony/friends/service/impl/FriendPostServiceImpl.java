@@ -91,7 +91,7 @@ public class FriendPostServiceImpl implements FriendPostService {
                                                 FriendPost friendPost = friendPostList.get(a);
                                                 // 设置元数据才能保存
                                                 friendPost.setMetadata(new Metadata());
-                                                friendPost.getMetadata().setGenerateName("friendPost-");
+                                                friendPost.getMetadata().setGenerateName("friend-post-");
                                                 friendPost.getSpec().setLogo(f.getSpec().getLogo());
                                                 client.create(friendPost).subscribe();
                                             }
