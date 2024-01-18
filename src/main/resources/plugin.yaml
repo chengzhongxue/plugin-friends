@@ -13,7 +13,7 @@ spec:
   configMapName: plugin-friends-configMap
   settingName: plugin-friends-settings
   displayName: "RSS订阅"
-  description: "RSS订阅管理模块，按W3C标准规则获取"
+  description: "提供对 RSS 链接的订阅功能，支持获取其订阅内容"
   license:
     - name: "GPL-3.0"
       url: "https://github.com/halo-dev/plugin-starter/blob/main/LICENSE"
