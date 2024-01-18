@@ -81,19 +81,19 @@ const mutate = async () => {
     if (isUpdateMode.value) {
       const {
         data: data
-      } = await apiClient.get(`/apis/friend.moony.la/v1alpha1/cronFriendPosts/${Se}`);
+      } = await apiClient.get(`/apis/friend.moony.la/v1alpha1/cronfriendposts/${Se}`);
       return formState.value = {
         ...formState.value,
         status: data.status,
         metadata: data.metadata
       },
       await apiClient.put<CronFriendPost>(
-        `/apis/friend.moony.la/v1alpha1/cronFriendPosts/${Se}`,
+        `/apis/friend.moony.la/v1alpha1/cronfriendposts/${Se}`,
         formState.value
       );
     } else {
       await apiClient.post<CronFriendPost>(
-        `/apis/friend.moony.la/v1alpha1/cronFriendPosts`,
+        `/apis/friend.moony.la/v1alpha1/cronfriendposts`,
         formState.value
       );
     }
@@ -104,7 +104,7 @@ const mutate = async () => {
 
 onMounted(async () => {
 
-  const {data: data} = await apiClient.get<CronFriendPostList>(`/apis/friend.moony.la/v1alpha1/cronFriendPosts`);
+  const {data: data} = await apiClient.get<CronFriendPostList>(`/apis/friend.moony.la/v1alpha1/cronfriendposts`);
   let items = data.items;
   if (items?.length){
     formState.value = items[0]

@@ -54,7 +54,7 @@ public class FriendPostController {
 
 
     /**
-     * 通过订阅站点link删除订阅帖子
+     * 通过订阅站点link删除订阅文章
      *
      * @param name
      * @return

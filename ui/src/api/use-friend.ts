@@ -62,10 +62,10 @@ export function useFriendPostFetch(
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["friendPosts", page, size,keyword],
+    queryKey: ["friend-posts", page, size,keyword],
     queryFn: async () => {
       const { data } = await service.get<friendList>(
-        "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPosts",
+        "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendposts",
         {
           params: {
             page: page.value,

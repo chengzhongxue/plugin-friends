@@ -179,7 +179,7 @@ function clearLocal() {
 // 首次加载文章
 function FetchFriendCircle() {
   var end = fdata.initnumber
-  var fetchUrl = "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPosts"
+  var fetchUrl = "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendposts"
   fetch(fetchUrl)
     .then(res => res.json())
     .then(json => {

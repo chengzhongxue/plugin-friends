@@ -27,7 +27,7 @@ const tabs = shallowRef([
   },
   {
     id: "friendPost",
-    label: "订阅帖子",
+    label: "订阅文章",
     component: markRaw(FriendPostListItem),
   },
   

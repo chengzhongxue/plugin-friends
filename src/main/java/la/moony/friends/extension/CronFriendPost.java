@@ -17,8 +17,8 @@ import java.time.Instant;
     group = "friend.moony.la",
     version = "v1alpha1",
     kind = "CronFriendPost",
-    singular = "cronFriendPost",
-    plural = "cronFriendPosts"
+    singular = "cronfriendpost",
+    plural = "cronfriendposts"
 )
 public class CronFriendPost extends AbstractExtension {
 

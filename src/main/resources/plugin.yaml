@@ -12,7 +12,7 @@ spec:
   homepage: https://github.com/chengzhongxue/plugin-friends
   configMapName: plugin-friends-configMap
   settingName: plugin-friends-settings
-  displayName: "RSS订阅"
+  displayName: "朋友圈"
   description: "提供对 RSS 链接的订阅功能，支持获取其订阅内容"
   license:
     - name: "GPL-3.0"

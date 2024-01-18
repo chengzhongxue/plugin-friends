@@ -11,10 +11,10 @@ metadata:
       ["plugin:friends:view"]
 rules:
   - apiGroups: [ "friend.moony.la" ]
-    resources: [ "friends","friendPosts" ]
+    resources: [ "friends","friendposts" ]
     verbs: [ "get", "list" ]
   - apiGroups: [ "api.plugin.halo.run" ]
-    resources: [ "plugins/friendPosts","plugins/friends" ]
+    resources: [ "plugins/friendposts","plugins/friends" ]
     resourceNames: [ "PluginFriends" ]
     verbs: [ "get", "list" ]
 ---
@@ -33,7 +33,7 @@ metadata:
       ["role-template-friends-view"]
 rules:
   - apiGroups: [ "friend.moony.la" ]
-    resources: [ "friends","friendPosts"]
+    resources: [ "friends","friendposts"]
     verbs: [ "create", "patch", "update", "delete", "deletecollection" ]
   - nonResourceURLs: [ "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/*",
                        "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/delByLink/*" ]

@@ -97,7 +97,7 @@ public class FriendRouter {
 
     RouterFunction<ServerResponse> friendPostNested() {
         return SpringdocRouteBuilder.route()
-            .GET("/friendPosts", this::listFriendPost,
+            .GET("/friendposts", this::listFriendPost,
                 builder -> {
                     builder.operationId("listFriendPosts")
                         .description("Friends FriendPost by query parameters")

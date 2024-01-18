@@ -12,7 +12,7 @@ import java.util.Date;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 @GVK(kind = "FriendPost", group = "friend.moony.la",
-    version = "v1alpha1", singular = "friendPost", plural = "friendPosts")
+    version = "v1alpha1", singular = "friendpost", plural = "friendposts")
 public class FriendPost extends AbstractExtension {
 
 

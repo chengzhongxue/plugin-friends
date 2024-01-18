@@ -38,13 +38,13 @@ const handleCheckAllChange = (e: Event) => {
 
 const handleDeleteInBatch = () => {
   Dialog.warning({
-    title: "是否确认删除所选的订阅帖子？",
+    title: "是否确认删除所选的订阅文章？",
     description: "删除之后将无法恢复。",
     confirmType: "danger",
     onConfirm: async () => {
       try {
         const promises = selectedFriendPosts.value.map((friendPost) => {
-          return service.delete(`/apis/friend.moony.la/v1alpha1/friendPosts/${friendPost}`);
+          return service.delete(`/apis/friend.moony.la/v1alpha1/friendposts/${friendPost}`);
         });
         if (promises) {
           await Promise.all(promises);
@@ -57,7 +57,7 @@ const handleDeleteInBatch = () => {
       } catch (e) {
         console.error(e);
       } finally {
-        queryClient.invalidateQueries({ queryKey: ["friendPosts"] });
+        queryClient.invalidateQueries({ queryKey: ["friend-posts"] });
       }
     },
   });
@@ -119,8 +119,8 @@ const handleDeleteInBatch = () => {
 
     <Transition v-else-if="!friendPosts?.length" appear name="fade">
       <VEmpty
-        message="暂无订阅帖子记录"
-        title="暂无订阅帖子记录"
+        message="暂无订阅文章记录"
+        title="暂无订阅文章记录"
       >
         <template #actions>
           <VSpace>
@@ -136,11 +136,11 @@ const handleDeleteInBatch = () => {
           <thead class="text-xs text-gray-700 uppercase bg-gray-50">
              <tr>
                <th scope="col" class="px-4 py-3"><div class="w-max flex items-center"> </div></th>
-               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">名称 </div></th>
+               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">作者名称 </div></th>
                <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">站点链接 </div></th>
-               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">帖子标题 </div></th>
-               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">帖子链接 </div></th>
-               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">帖子内容 </div></th>
+               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">文章标题 </div></th>
+               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">文章链接 </div></th>
+               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">文章内容 </div></th>
                <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">发布时间 </div></th>
              </tr>
           </thead>

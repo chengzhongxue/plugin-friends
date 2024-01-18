@@ -14,11 +14,11 @@ export default definePlugin({
         name: "Friends",
         component: Friend,
         meta: {
-          title: "RSS订阅",
+          title: "朋友圈",
           searchable: true,
           permissions: ["plugin:friends:view"],
           menu: {
-            name: "RSS订阅",
+            name: "朋友圈",
             group: "content",
             icon: markRaw(IconLink),
             priority: 0,
