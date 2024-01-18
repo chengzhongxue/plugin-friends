@@ -4,9 +4,9 @@
 
 ![friends.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a7a631243d0.png)
 
-![gl.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a7a7ad77384.png)
+![Snipaste_2024-01-18_13-05-43.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a8b20c58862.png)
 
-![Snipaste_2024-01-17_18-10-27.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a7a7ae04f24.png)
+![Snipaste_2024-01-18_13-05-50.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a8b20ce0d28.png)
 
 ## 使用方式
 * 在应用市场下载并启用。
