@@ -5,8 +5,8 @@ metadata:
   labels:
     halo.run/role-template: "true"
   annotations:
-    rbac.authorization.halo.run/module: "RSS订阅"
-    rbac.authorization.halo.run/display-name: "RSS订阅查看"
+    rbac.authorization.halo.run/module: "朋友圈"
+    rbac.authorization.halo.run/display-name: "朋友圈查看"
     rbac.authorization.halo.run/ui-permissions: |
       ["plugin:friends:view"]
 rules:
@@ -25,8 +25,8 @@ metadata:
   labels:
     halo.run/role-template: "true"
   annotations:
-    rbac.authorization.halo.run/module: "RSS订阅"
-    rbac.authorization.halo.run/display-name: "RSS订阅管理"
+    rbac.authorization.halo.run/module: "朋友圈"
+    rbac.authorization.halo.run/display-name: "朋友圈管理"
     rbac.authorization.halo.run/ui-permissions: |
       ["plugin:friends:manage"]
     rbac.authorization.halo.run/dependencies: |
