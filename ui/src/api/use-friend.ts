@@ -18,7 +18,7 @@ export function useFriendFetch(
     queryKey: ["friends", page, size,keyword],
     queryFn: async () => {
       const { data } = await service.get<friendList>(
-        "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friends",
+        "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friends",
         {
           params: {
             page: page.value,
@@ -65,7 +65,7 @@ export function useFriendPostFetch(
     queryKey: ["friend-posts", page, size,keyword],
     queryFn: async () => {
       const { data } = await service.get<friendList>(
-        "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendposts",
+        "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendposts",
         {
           params: {
             page: page.value,

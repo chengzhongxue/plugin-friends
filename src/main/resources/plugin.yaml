@@ -1,7 +1,7 @@
 apiVersion: plugin.halo.run/v1alpha1
 kind: Plugin
 metadata:
-  name: PluginFriends
+  name: plugin-friends
 spec:
   enabled: true
   requires: ">=2.11.0"

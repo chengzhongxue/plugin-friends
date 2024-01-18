@@ -179,12 +179,12 @@ function clearLocal() {
 // 首次加载文章
 function FetchFriendCircle() {
   var end = fdata.initnumber
-  var fetchUrl = "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendposts"
+  var fetchUrl = "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendposts"
   fetch(fetchUrl)
     .then(res => res.json())
     .then(json => {
       var articleData = eval(json.items);
-      fetch("/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friend/statistical")
+      fetch("/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friend/statistical")
         .then(res => res.json())
         .then(json => {
           var statisticalData = json
@@ -200,7 +200,7 @@ function FetchFriendCircle() {
 function openMeShow(event) {
   event.preventDefault()
   var url = event.currentTarget.dataset.link
-  var fetchUrl = `/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/listByUrl?page=${1}&size=${5}&url=${url}`
+  var fetchUrl = `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/listByUrl?page=${1}&size=${5}&url=${url}`
   if (noClick == 'ok') {
     noClick = 'no'
     fetchShow(fetchUrl)

@@ -15,7 +15,7 @@ rules:
     verbs: [ "get", "list" ]
   - apiGroups: [ "api.plugin.halo.run" ]
     resources: [ "plugins/friendposts","plugins/friends" ]
-    resourceNames: [ "PluginFriends" ]
+    resourceNames: [ "plugin-friends" ]
     verbs: [ "get", "list" ]
 ---
 apiVersion: v1alpha1
@@ -35,6 +35,6 @@ rules:
   - apiGroups: [ "friend.moony.la" ]
     resources: [ "friends","friendposts"]
     verbs: [ "create", "patch", "update", "delete", "deletecollection" ]
-  - nonResourceURLs: [ "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/*",
-                       "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/delByLink/*" ]
+  - nonResourceURLs: [ "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/*",
+                       "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByLink/*" ]
     verbs: [ "create" , "delete"]

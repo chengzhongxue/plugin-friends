@@ -10,7 +10,7 @@ export const synchronizationRss = () => {
     cancelText: "取消",
     onConfirm: async () => {
       try {
-        await request.post("/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends/friendPost/synchronizationFriend")
+        await request.post("/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/synchronizationFriend")
           .then((res: any) => {
             Toast.success("同步RSS数据成功");
           });

@@ -4,7 +4,7 @@ import { IconLink } from "@halo-dev/components";
 import { markRaw } from "vue";
 
 export default definePlugin({
-  name: "PluginFriends",
+  name: "plugin-friends",
   components: {},
   routes: [
     {

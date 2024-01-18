@@ -64,9 +64,9 @@ public class FriendRouter {
     @Bean
     RouterFunction<ServerResponse> FriendRoute() {
         return SpringdocRouteBuilder.route()
-            .nest(RequestPredicates.path("/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends"),
+            .nest(RequestPredicates.path("/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends"),
                 this::nested,
-                builder -> builder.operationId("PluginFriendsEndpoints")
+                builder -> builder.operationId("plugin-friendsEndpoints")
                     .description("Plugin Friends Endpoints").tag(friendTag)
             )
             .build();
@@ -75,9 +75,9 @@ public class FriendRouter {
     @Bean
     RouterFunction<ServerResponse> FriendPostRoute() {
         return SpringdocRouteBuilder.route()
-            .nest(RequestPredicates.path("/apis/api.plugin.halo.run/v1alpha1/plugins/PluginFriends"),
+            .nest(RequestPredicates.path("/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends"),
                 this::friendPostNested,
-                builder -> builder.operationId("PluginFriendsEndpoints")
+                builder -> builder.operationId("plugin-friendsEndpoints")
                     .description("Plugin Friends Endpoints").tag(friendPostTag)
             )
             .build();
