@@ -66,7 +66,7 @@ public class FriendRouter {
         return SpringdocRouteBuilder.route()
             .nest(RequestPredicates.path("/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends"),
                 this::nested,
-                builder -> builder.operationId("plugin-friendsEndpoints")
+                builder -> builder.operationId("PluginFriendsEndpoints")
                     .description("Plugin Friends Endpoints").tag(friendTag)
             )
             .build();
@@ -77,7 +77,7 @@ public class FriendRouter {
         return SpringdocRouteBuilder.route()
             .nest(RequestPredicates.path("/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends"),
                 this::friendPostNested,
-                builder -> builder.operationId("plugin-friendsEndpoints")
+                builder -> builder.operationId("PluginFriendsEndpoints")
                     .description("Plugin Friends Endpoints").tag(friendPostTag)
             )
             .build();
