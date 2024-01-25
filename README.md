@@ -2,6 +2,8 @@
 * 朋友圈管理插件, 支持在 Console 进行管理以及为主题端提供 `/friends`, `/blogs`, `/blog`, `/blog-requests/add`, `/blog-requests` 页面路由。
 * 提供对 RSS 链接的订阅功能，支持获取其订阅内容
 
+前台页面移植自[boyouquan](https://github.com/olzhy/boyouquan)
+
 ![Snipaste_2024-01-25_17-49-48.png](https://api.minio.yyds.pink/lsky/img/2024/01/65b231e550064.png)
 
 ![Snipaste_2024-01-25_17-50-14.png](https://api.minio.yyds.pink/lsky/img/2024/01/65b231e5d1752.png)
