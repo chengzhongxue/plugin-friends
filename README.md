@@ -1,12 +1,17 @@
 # plugin-friends
-* 朋友圈管理插件, 支持在 Console 进行管理以及为主题端提供 `/friends` 页面路由。
+* 朋友圈管理插件, 支持在 Console 进行管理以及为主题端提供 `/friends`, `/blogs`, `/blog`, `/blog-requests/add`, `/blog-requests` 页面路由。
 * 提供对 RSS 链接的订阅功能，支持获取其订阅内容
 
-![friends.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a7a631243d0.png)
+![Snipaste_2024-01-25_17-49-48.png](https://api.minio.yyds.pink/lsky/img/2024/01/65b231e550064.png)
 
-![Snipaste_2024-01-18_13-05-43.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a8b20c58862.png)
+![Snipaste_2024-01-25_17-50-14.png](https://api.minio.yyds.pink/lsky/img/2024/01/65b231e5d1752.png)
 
-![Snipaste_2024-01-18_13-05-50.png](https://api.minio.yyds.pink/lsky/img/2024/01/65a8b20ce0d28.png)
+![Snipaste_2024-01-25_17-50-33.png](https://api.minio.yyds.pink/lsky/img/2024/01/65b231e7ed5e2.png)
+
+![Snipaste_2024-01-25_17-50-39.png](https://api.minio.yyds.pink/lsky/img/2024/01/65b231e82bf76.png)
+
+![Snipaste_2024-01-25_17-50-47.png](https://api.minio.yyds.pink/lsky/img/2024/01/65b231e7871c7.png)
+
 
 ## 使用方式
 * 在应用市场下载并启用。
@@ -14,6 +19,9 @@
 
 ## 特性
 * 内置模板，无需主题支持，但也可以通过主题自定义模板。
+
+## 📃文档
+https://www.wxy97.com/docs/halo-plugin-webhook
 
 ## 主题适配
 目前此插件为主题端提供了 `/friends` 路由，模板为 `friends.html`，也提供了 Finder API，可以将瞬间列表渲染到任何地方。

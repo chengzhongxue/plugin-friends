@@ -1,5 +1,6 @@
 package la.moony.friends.finders;
 
+import la.moony.friends.vo.BlogVo;
 import la.moony.friends.vo.FriendPostVo;
 import la.moony.friends.vo.FriendVo;
 import la.moony.friends.vo.StatisticalVo;
@@ -33,6 +34,9 @@ public interface FriendFinder {
 
     Mono<ListResult<FriendVo>> friendList(int pageNum, Integer pageSize, String sort, String keyword);
 
+
+    Mono<ListResult<BlogVo>> blogList(int pageNum, Integer pageSize, String sort, String keyword);
+
     /**
      *  查询未审核的博客信息
      * @param page
@@ -41,18 +45,15 @@ public interface FriendFinder {
      */
     Mono<ListResult<FriendVo>> blogRequestList(Integer page, Integer size);
 
-    Mono<ListResult<FriendPostVo>> listByName(Integer page, Integer size,String name);
-
-    Mono<ListResult<FriendPostVo>> listByUrl(Integer page, Integer size,String url);
-
     Mono<FriendPostVo> get(String friendPostName);
 
     Mono<FriendVo> friendGet(String friendName);
 
     Flux<FriendPostVo> listByUrl(String url);
 
-
     Flux<FriendPostVo> listByAuthor(String author);
+
+    Mono<ListResult<FriendPostVo>> listByUrl(Integer page, Integer size,String url);
 
     Mono<ListResult<FriendPostVo>> listByAuthor(Integer page, Integer size,String author);
 

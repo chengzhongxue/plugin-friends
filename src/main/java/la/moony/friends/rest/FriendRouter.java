@@ -1,6 +1,7 @@
 package la.moony.friends.rest;
 
 import la.moony.friends.finders.FriendFinder;
+import la.moony.friends.vo.BlogVo;
 import la.moony.friends.vo.FriendPostVo;
 import la.moony.friends.vo.FriendVo;
 import la.moony.friends.vo.StatisticalVo;
@@ -116,7 +117,7 @@ public class FriendRouter {
             );
     }
 
-    private Mono<UrlContextListResult<FriendVo>> blogList(ServerRequest request) {
+    private Mono<UrlContextListResult<BlogVo>> blogList(ServerRequest request) {
         String path = request.path();
         String keywordVal = request.queryParam(SORT_PARAM)
             .filter(StringUtils::isNotBlank)
@@ -127,8 +128,8 @@ public class FriendRouter {
         return this.settingFetcher.get("base")
             .map(item -> item.get("pageSize").asInt(10))
             .defaultIfEmpty(10)
-            .flatMap(pageSize -> friendFinder.friendList(pageNum, pageSize, sort,keyword)
-                .map(list -> new UrlContextListResult.Builder<FriendVo>()
+            .flatMap(pageSize -> friendFinder.blogList(pageNum, pageSize, sort,keyword)
+                .map(list -> new UrlContextListResult.Builder<BlogVo>()
                     .listResult(list)
                     .nextUrl(appendKeywordParamIfPresent(
                         PageUrlUtils.nextPageUrl(path, totalPage(list)), keywordVal)

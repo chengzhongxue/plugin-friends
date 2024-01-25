@@ -10,6 +10,7 @@ import java.util.function.Function;
 import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
 import la.moony.friends.finders.FriendFinder;
+import la.moony.friends.vo.BlogVo;
 import la.moony.friends.vo.FriendPostVo;
 import la.moony.friends.vo.FriendVo;
 import la.moony.friends.vo.StatisticalVo;
@@ -94,11 +95,6 @@ public class FriendFinderImpl implements FriendFinder {
     }
 
     @Override
-    public Mono<ListResult<FriendPostVo>> listByName(Integer page, Integer size,String name) {
-        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getUrl(), name), defaultFriendPostComparator());
-    }
-
-    @Override
     public Flux<FriendPostVo> listByUrl(String url) {
         return friendPostList(post -> StringUtils.equals(post.getSpec().getUrl(), url))
             .map(FriendPostVo::from);
@@ -133,6 +129,15 @@ public class FriendFinderImpl implements FriendFinder {
     public Mono<ListResult<FriendVo>> friendList(int pageNum, Integer pageSize, String sort,
         String keyword) {
         return pageFriend(pageNum, pageSize,
+            blogToPredicate(keyword),
+            defaultBlogComparator(sort)
+        );
+    }
+
+    @Override
+    public Mono<ListResult<BlogVo>> blogList(int pageNum, Integer pageSize, String sort,
+        String keyword) {
+        return pageBlog(pageNum, pageSize,
             blogToPredicate(keyword),
             defaultBlogComparator(sort)
         );
@@ -224,6 +229,28 @@ public class FriendFinderImpl implements FriendFinder {
             .defaultIfEmpty(new ListResult<>(page, size, 0L, List.of()));
     }
 
+    private Mono<ListResult<BlogVo>> pageBlog(Integer page, Integer size,
+        @Nullable Predicate<Friend> predicate,
+        Comparator<Friend> comparator) {
+        Flux<FriendPost> friendPostFlux = friendPostList(null);
+        return client.list(Friend.class, predicate, comparator,
+                pageNullSafe(page), sizeNullSafe(size))
+            .flatMap(list -> Flux.fromStream(list.get()).map(BlogVo::from)
+                .concatMap(friend -> friendPostFlux
+                    .filter(friendPost -> StringUtils.equals(friendPost.getSpec().getFriendName(),
+                        friend.getMetadata().getName())
+                    ).map(FriendPostVo::from)
+                    .collectList().map(friend::withPosts)
+                    .defaultIfEmpty(friend)
+                )
+                .collectList()
+                .map(friendVos -> new ListResult<>(list.getPage(), list.getSize(),
+                    list.getTotal(), friendVos)
+                )
+            )
+            .defaultIfEmpty(new ListResult<>(page, size, 0L, List.of()));
+    }
+
     static Comparator<Friend> defaultBlogComparator(String sort) {
         Function<Friend, Instant> function = friend -> friend.getSpec().getUpdateTime();
         if (StringUtils.isNotEmpty(sort)){
@@ -268,7 +295,6 @@ public class FriendFinderImpl implements FriendFinder {
         FriendVo friendVo = FriendVo.from(friend);
         return Mono.just(friendVo);
     }
-
 
     int pageNullSafe(Integer page) {
         return ObjectUtils.defaultIfNull(page, 1);

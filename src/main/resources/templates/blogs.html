@@ -83,48 +83,56 @@
                 <div class="description">
                     <p th:text="${blogInfo.spec.description}"></p>
                 </div>
-                <th:block th:with="posts = ${friendFinder.listByUrl(1,3,blogInfo.spec.link)}">
-                    <th:blcok th:if="${not #lists.isEmpty(posts.items)}">
+                <th:block th:with="posts = ${blogInfo.posts}">
+                    <th:blcok th:if="${not #lists.isEmpty(posts)}">
                         <div class="summary">
                             <div class="flex-item left">
                                 <div class="title">
                                     <p>文章收录</p>
                                 </div>
                                 <div class="count">
-                                    <p th:text="${posts.total}"></p>
+                                    <p th:text="${posts.size()}"></p>
                                 </div>
                             </div>
-                            <!-- <div class="flex-item center">
-                                <div class="title">
-                                    <p th:if="${sort} == 'access_count'" style="color: #cb2e58;">文章浏览</p>
-                                    <p th:unless="${sort} == 'access_count'">文章浏览</p>
-                                </div>
-                                <div class="count">
-                                    <p th:if="${sort} == 'access_count'" style="color: #cb2e58;"
-                                        th:text="${blogInfo.accessCount}"></p>
-                                    <p th:unless="${sort} == 'access_count'" th:text="${blogInfo.accessCount}"></p>
-                                </div>
-                            </div> -->
                             <div class="flex-item right">
                                 <div class="title">
                                     <p>最近更新</p>
                                 </div>
                                 <div class="count">
-                                    <p th:text="${#dates.format(posts.items[0].spec.pubDate, 'yyyy/MM/dd')}">
+                                    <p th:text="${#dates.format(posts[0].spec.pubDate, 'yyyy/MM/dd')}">
                                     </p>
+                                </div>
+                            </div>
+                            <div class="flex-item right">
+                                <div class="title">
+                                    <p style="color: #cb2e58;">收录时间</p>
+                                </div>
+                                <div class="count" th:with="days=${(new java.util.Date().getTime()-blogInfo.metadata.creationTimestamp.toEpochMilli())/86400000}">
+                                    <th:block th:if="${days == 0}">
+                                        <p style="color: #cb2e58;">最近</p>
+                                    </th:block>
+                                    <th:block th:if="${days < 15 && days >=1}">
+                                        <p style="color: #cb2e58;" th:text="${days}+'天前'"></p>
+                                    </th:block>
+                                    <th:block th:if="${days >= 15}">
+                                        <p style="color: #cb2e58;" th:text="${#dates.format(blogInfo.metadata.creationTimestamp, 'yyyy/MM/dd')}"></p>
+                                    </th:block>
                                 </div>
                             </div>
                         </div>
                         <div class="latest-posts">
                             <p>最新文章</p>
-                            <p th:each="post, iterstat: ${posts.items}">
-                                <text style="margin-right: 6px;"
-                                    th:text="${#dates.format(post.spec.pubDate, 'yyyy/MM/dd')}"></text>
-                                <a th:if="${blogInfo.status.statusType=='OK'}" th:text="${post.spec.title}"
-                                    th:href="${post.spec.link}"></a>
-                                <a th:unless="${blogInfo.status.statusType=='OK'}" th:text="${post.spec.title}"
-                                    th:href="${post.spec.link}"></a>
-                            </p>
+                            <th:block th:each="post, iterstat: ${posts}">
+                                <p th:if="${iterstat.index<3}">
+                                    <text style="margin-right: 6px;"
+                                          th:text="${#dates.format(post.spec.pubDate, 'yyyy/MM/dd')}"></text>
+                                    <a th:if="${blogInfo.status.statusType=='OK'}" th:text="${post.spec.title}"
+                                       th:href="${post.spec.link}"></a>
+                                    <a th:unless="${blogInfo.status.statusType=='OK'}" th:text="${post.spec.title}"
+                                       th:href="${post.spec.link}"></a>
+                                </p>
+                            </th:block>
+
                         </div>
                     </th:blcok>
                 </th:block>
