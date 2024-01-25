@@ -18,10 +18,13 @@ public class FriendVo {
 
     private Friend.Spec spec;
 
+    private Friend.Status status;
+
     public static FriendVo from(Friend friend) {
         return FriendVo.builder()
             .metadata(friend.getMetadata())
             .spec(friend.getSpec())
+            .status(friend.getStatus())
             .build();
     }
 }

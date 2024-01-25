@@ -1,0 +1,23 @@
+<footer class="page-footer" th:fragment="page-footer(data,path)" th:if="${data.hasNext || data.hasPrevious}" 
+th:with="isSort = ${not #strings.isEmpty(param.sort)}">
+    <!-- if hasKeyword -->
+
+    <nav th:if="${not #strings.isEmpty(param.keyword)}" class="pagination">
+        <th:block th:with="paramData = ${isSort ? '?param.sort=' + param.sort : ''}">
+            <a class="pre" th:if="${data.page} > 1"
+                th:href="${path}+'/page/'+${data.page - 1} + paramData + '&keyword=' + ${keyword}">« 上一页</a>
+            <a class="next" th:if="${data.hasNext}"
+                th:href="${path}+'/page/'+${data.page + 1} + paramData +'&keyword=' + ${keyword}">下一页 »</a>
+        </th:block>
+    </nav>
+    
+    <!-- else -->
+    <nav th:if="${#strings.isEmpty(param.keyword)}" class="pagination"> 
+        <th:block th:with="paramData = ${isSort ? '?param.sort=' + param.sort : ''}">
+            
+            <a class="pre" th:if="${data.page} > 1" th:href="${path}+'/page/'+${data.page - 1}+${paramData}">« 上一页</a>
+            <a class="next" th:if="${data.hasNext}" th:href="${path}+'/page/'+${data.page + 1}+${paramData}">下一页 »</a>
+        </th:block>
+
+    </nav>
+</footer>

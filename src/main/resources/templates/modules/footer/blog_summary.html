@@ -1,0 +1,8 @@
+<div th:fragment="blog_summary" class="footer-summary" th:with="stats = ${friendFinder.statistical()}">
+    <div class="flex-item">
+        <p>收录博客</p><a style="color: #cb2e58;" th:text="${stats.friendsNum}"></a><p>个</p>
+    </div>
+    <div class="flex-item">
+        <p>收录文章</p><a style="color: #cb2e58;" th:text="${stats.articleNum}"></a><p>篇</p>
+    </div>
+</div>

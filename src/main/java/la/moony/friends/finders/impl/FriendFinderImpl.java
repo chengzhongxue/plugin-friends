@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Function;
 import la.moony.friends.extension.Friend;
@@ -23,6 +24,7 @@ import run.halo.app.extension.ListResult;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.theme.finders.Finder;
 
+
 /**
  * A default implementation for {@link FriendFinder}.
  *
@@ -32,14 +34,23 @@ import run.halo.app.theme.finders.Finder;
 @Finder("friendFinder")
 @RequiredArgsConstructor
 public class FriendFinderImpl implements FriendFinder {
-    
+
+    public static final Predicate<Friend> FRIEND_PREDICATE = friend ->
+    {
+        if (friend.getSpec().getSubmittedType()==null) {
+            return true;
+        }else {
+            return  Objects.equals(friend.getSpec().getSubmittedType(),Friend.Spec.SubmittedType.APPROVED) ||
+                Objects.equals(friend.getSpec().getSubmittedType(),Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID);
+        }
+    };
 
     private final ReactiveExtensionClient client;
 
 
 
     Flux<FriendPost> friendPostList(@Nullable Predicate<FriendPost> predicate) {
-        return client.list(FriendPost.class, predicate, defaultComparator());
+        return client.list(FriendPost.class, predicate, defaultFriendPostComparator());
     }
 
 
@@ -54,13 +65,21 @@ public class FriendFinderImpl implements FriendFinder {
 
     @Override
     public Flux<FriendVo> friendListAll() {
-        return friendList(null).map(FriendVo::from);
+        return friendList(FRIEND_PREDICATE).map(FriendVo::from);
     }
 
 
     @Override
     public Mono<ListResult<FriendPostVo>> list(Integer page, Integer size) {
-        return pageFriendPost(page, size,null, defaultComparator());
+        return pageFriendPost(page, size,null, defaultFriendPostComparator());
+    }
+
+    @Override
+    public Mono<ListResult<FriendPostVo>> list(Integer page, Integer size,String keyword) {
+        return pageFriendPost(page, size,
+            postToPredicate(keyword),
+            defaultFriendPostComparator()
+        );
     }
 
 
@@ -71,7 +90,12 @@ public class FriendFinderImpl implements FriendFinder {
 
     @Override
     public Mono<ListResult<FriendPostVo>> listByUrl(Integer page, Integer size,String url) {
-        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getUrl(), url), defaultComparator());
+        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getUrl(), url), defaultFriendPostComparator());
+    }
+
+    @Override
+    public Mono<ListResult<FriendPostVo>> listByName(Integer page, Integer size,String name) {
+        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getUrl(), name), defaultFriendPostComparator());
     }
 
     @Override
@@ -84,6 +108,11 @@ public class FriendFinderImpl implements FriendFinder {
     public Flux<FriendPostVo> listByAuthor(String author) {
         return friendPostList(post -> StringUtils.equals(post.getSpec().getAuthor(), author))
             .map(FriendPostVo::from);
+    }
+
+    @Override
+    public Mono<ListResult<FriendPostVo>> listByAuthor(Integer page, Integer size,String author) {
+        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getAuthor(), author), defaultFriendPostComparator());
     }
 
     @Override
@@ -100,6 +129,55 @@ public class FriendFinderImpl implements FriendFinder {
             .thenReturn(statisticalVo));
     }
 
+    @Override
+    public Mono<ListResult<FriendVo>> friendList(int pageNum, Integer pageSize, String sort,
+        String keyword) {
+        return pageFriend(pageNum, pageSize,
+            blogToPredicate(keyword),
+            defaultBlogComparator(sort)
+        );
+    }
+
+    @Override
+    public Mono<ListResult<FriendVo>> blogRequestList(Integer page, Integer size) {
+        return pageFriend(page, size,friend -> friend.getSpec().getSelfSubmitted(),
+            defaultFriendComparator());
+    }
+
+    public Predicate<Friend> blogToPredicate(String keyword) {
+        Predicate<Friend> keywordPredicate = friend -> {
+            if (StringUtils.isBlank(keyword)) {
+                return true;
+            }
+            String keywordToSearch = keyword.trim().toLowerCase();
+            return StringUtils.containsAnyIgnoreCase(friend.getSpec().getDisplayName(),
+                keywordToSearch)
+                || StringUtils.containsAnyIgnoreCase(friend.getSpec().getRssUrl(), keywordToSearch)
+                || StringUtils.containsAnyIgnoreCase(friend.getSpec().getLink(), keywordToSearch);
+        };
+        Predicate<Friend> groupPredicate = friend -> {
+            if (friend.getSpec().getStatus()!=null){
+                return friend.getSpec().getStatus().equals(1);
+            }
+            return false;
+        };
+        return groupPredicate.and(keywordPredicate).and(FRIEND_PREDICATE);
+    }
+
+    public Predicate<FriendPost> postToPredicate(String keyword) {
+        Predicate<FriendPost> keywordPredicate = post -> {
+            if (StringUtils.isBlank(keyword)) {
+                return true;
+            }
+            String keywordToSearch = keyword.trim().toLowerCase();
+            return StringUtils.containsAnyIgnoreCase(post.getSpec().getTitle(),
+                keywordToSearch)
+                || StringUtils.containsAnyIgnoreCase(post.getSpec().getDescription(), keywordToSearch)
+                || StringUtils.containsAnyIgnoreCase(post.getSpec().getAuthor(), keywordToSearch);
+        };
+        Predicate<FriendPost> groupPredicate = friend -> {return true;};
+        return groupPredicate.and(keywordPredicate);
+    }
 
     @Override
     public Mono<FriendPostVo> get(String friendPostName) {
@@ -110,11 +188,11 @@ public class FriendFinderImpl implements FriendFinder {
 
     @Override
     public Mono<FriendVo> friendGet(String friendName) {
+        Predicate<Friend> predicate = friend -> true;
         return client.get(Friend.class, friendName)
-            .filter(null)
+            .filter(predicate)
             .flatMap(this::getFriendVo);
     }
-
 
     private Mono<ListResult<FriendPostVo>> pageFriendPost(Integer page, Integer size,
         @Nullable Predicate<FriendPost> predicate,
@@ -146,15 +224,28 @@ public class FriendFinderImpl implements FriendFinder {
             .defaultIfEmpty(new ListResult<>(page, size, 0L, List.of()));
     }
 
-    private Comparator<FriendPost> defaultComparator() {
-        Function<FriendPost, Instant> pubDate =
-            friendPost -> friendPost.getSpec().getPubDate();
-        Function<FriendPost, String> name = post -> post.getMetadata().getName();
-        return Comparator.comparing(pubDate, Comparators.nullsLow())
+    static Comparator<Friend> defaultBlogComparator(String sort) {
+        Function<Friend, Instant> function = friend -> friend.getSpec().getUpdateTime();
+        if (StringUtils.isNotEmpty(sort)){
+            if (sort.equals("collect_time")){
+                function = friend -> friend.getMetadata().getCreationTimestamp();
+            }
+        }
+        Function<Friend, String> name = friend -> friend.getMetadata()
+            .getName();
+        return Comparator.comparing(function, Comparators.nullsLow())
             .thenComparing(name)
             .reversed();
     }
 
+    static Comparator<FriendPost> defaultFriendPostComparator() {
+        Function<FriendPost, Instant> function = friend -> friend.getSpec().getPubDate();
+        Function<FriendPost, String> name = friendPost -> friendPost.getMetadata()
+            .getName();
+        return Comparator.comparing(function, Comparators.nullsLow())
+            .thenComparing(name)
+            .reversed();
+    }
 
     static Comparator<Friend> defaultFriendComparator() {
         Function<Friend, Instant> createTime = friend -> friend.getMetadata()
@@ -165,6 +256,8 @@ public class FriendFinderImpl implements FriendFinder {
             .thenComparing(name)
             .reversed();
     }
+
+
 
     private Mono<FriendPostVo> getFriendPostVo(@Nonnull FriendPost friendPost) {
         FriendPostVo friendPostVo = FriendPostVo.from(friendPost);
@@ -186,23 +279,27 @@ public class FriendFinderImpl implements FriendFinder {
     }
 
 
-
-
     public Mono<Integer> friendCount() {
-        return client.list(Friend.class, null, null)
+        return client.list(Friend.class, FRIEND_PREDICATE, null)
+            .count()
+            .map(Long::intValue);
+    }
+
+    public Mono<Integer> isFriend(String rssUrl) {
+        return client.list(Friend.class,friend -> StringUtils.equals(friend.getSpec().getRssUrl(),rssUrl), null)
             .count()
             .map(Long::intValue);
     }
 
     public Mono<Integer> friendSucceedCount() {
-        return client.list(Friend.class, friend -> {
-            if (friend.getSpec().getStatus()!=null){
-                if (friend.getSpec().getStatus() == 1){
-                    return true;
-                }
-            }
-            return false;
-            }, null)
+        return client.list(Friend.class, FRIEND_PREDICATE.and(friend -> {
+                    if (friend.getSpec().getStatus()!=null){
+                        if (friend.getSpec().getStatus() == 1){
+                            return true;
+                        }
+                    }
+                    return false;
+                }), null)
             .count()
             .map(Long::intValue);
     }

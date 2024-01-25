@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{plugin:plugin-friends:modules/layout :: html(content = ~{::content},head = ~{::head})}">
+    <th:block th:fragment="head">
+<head
+    th:replace="~{plugin:plugin-friends:modules/head::head('博客「' + ${blogRequestDetail.spec.displayName} + '」审核详情' + ' - 朋友圈！', '博客收录申请', '博客收录申请。')}">
+</head>
+</th:block>
+<th:block th:fragment="content">
+    <main class="main">
+        <header class="post-header">
+            <h3 class="post-title" th:text="'博客「' + ${blogRequestDetail.spec.displayName} + '」审核详情'"></h3>
+        </header>
+        <div class="blog-requests">
+            <div class="requests-container">
+                <table style="display: table; table-layout: fixed;">
+                    <tbody>
+                        <tr>
+                            <td width="20%">
+                                <span>博客名称</span>
+                            </td>
+                            <td width="80%">
+                                <p th:text="${blogRequestDetail.spec.displayName}"></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="20%">
+                                <span>博客描述</span>
+                            </td>
+                            <td width="80%">
+                                <p th:text="${blogRequestDetail.spec.description}"></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="20%">
+                                <span>RSS 地址</span>
+                            </td>
+                            <td width="80%">
+                                <p><a th:text="${blogRequestDetail.spec.rssUrl}"
+                                        th:href="${blogRequestDetail.spec.rssUrl}"></a></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="20%">
+                                <span>博主邮箱</span>
+                            </td>
+                            <td width="80%" th:with="email = ${blogRequestDetail.spec.adminEmail}">
+                                <p th:text="${email.substring(0, 1)}+'****@'+${#strings.substringAfter(email,'@')}"></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="20%">
+                                <span>提交时间</span>
+                            </td>
+                            <td width="80%">
+                                <p
+                                    th:text="${#dates.format(blogRequestDetail.metadata.creationTimestamp, 'yyyy/MM/dd')}">
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="20%">
+                                <span>审核状态</span>
+                            </td>
+                            <td width="80%">
+                                <p th:if="${#strings.equals(blogRequestDetail.spec.submittedType, 'APPROVED') || #strings.equals(blogRequestDetail.spec.submittedType, 'SYSTEM_CHECK_VALID')}">
+                                    <a th:href="'/blogs/' + ${blogRequestDetail.metadata.name}">通过</a></p>
+                                <p th:if="${#strings.equals(blogRequestDetail.spec.submittedType, 'REJECTED') ||
+                                #strings.equals(blogRequestDetail.spec.submittedType, 'SYSTEM_CHECK_INVALID') ||
+                                #strings.equals(blogRequestDetail.spec.submittedType, 'SUBMITTED')}">未通过</p>
+                            </td>
+                        </tr>
+                        <tr th:if="${#strings.equals(blogRequestDetail.spec.submittedType, 'REJECTED') ||
+                                #strings.equals(blogRequestDetail.spec.submittedType, 'SYSTEM_CHECK_INVALID') ||
+                                #strings.equals(blogRequestDetail.spec.submittedType, 'SUBMITTED')}">
+                            <td width="20%">
+                                <span>未通过原因</span>
+                            </td>
+                            <td width="80%">
+                                <p th:text="${blogRequestDetail.spec.reason}"></p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    
+</th:block>
+
+</html>

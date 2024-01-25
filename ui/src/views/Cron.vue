@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {VButton} from "@halo-dev/components";
 import {computed, onMounted, ref} from "vue";
-import {CronFriendPost, CronFriendPostList} from "@/types";
+import type {CronFriendPost, CronFriendPostList} from "@/types";
 import cloneDeep from "lodash.clonedeep";
 import apiClient from "@/api/request";
 

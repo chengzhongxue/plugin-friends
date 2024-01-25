@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="https://www.thymeleaf.org"
-      th:replace="plugin:plugin-friends:modules/layout :: html(content = ~{::content})">
-<th:block th:fragment="content">
-    <div class="container">
-        <div class="content">
-            <div class="post">
-                <h2 class="post-title" th:text="${title}"></h2>
-                <div id="hexo-circle-of-friends-root" data-v-app="">
-                    <div id="cf-container">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      th:replace="~{plugin:plugin-friends:modules/layout :: html(content = ~{::content},head = ~{::head})}">
+<th:block th:fragment="head">
+    <head
+            th:replace="~{plugin:plugin-friends:modules/head::head('首页 - 朋友圈 · 博客人的朋友圈！', '博客, 博友,朋友圈', '朋友圈是博客人的专属朋友圈，欢迎来这里获取博客更新和博友动态！')}">
+    </head>
 </th:block>
+<th:block th:fragment="content">
+    <main th:replace="~{plugin:plugin-friends:modules/home/main}"></main>
+    <script th:src="@{/plugins/plugin-friends/assets/static/js/home-search.js}" type="text/javascript"></script>
+</th:block>
+
 </html>

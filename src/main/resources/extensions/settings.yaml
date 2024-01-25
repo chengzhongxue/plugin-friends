@@ -17,3 +17,20 @@ spec:
           name: pageSize
           validation: required|Number
           value: 10
+        - $formkit: group
+          name: gravatar
+          label: 头像 Gravatar
+          help: "用户提交，邮箱自动匹配头像"
+          value:
+            apiUrl: https://cravatar.cn/avatar/
+            apiParam: d=mp&s=80
+          children:
+            - $formkit: text
+              name: apiUrl
+              label: API地址
+              help: "后缀带 /"
+              validation: required
+            - $formkit: text
+              name: apiParam
+              label: API参数
+              validation: required

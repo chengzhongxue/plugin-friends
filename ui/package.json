@@ -21,7 +21,9 @@
     "lodash.clonedeep": "^4.5.0",
     "dayjs": "^1.11.9",
     "javascript-time-ago": "^2.5.9",
-    "vue": "^3.3.12"
+    "vue": "^3.3.12",
+    "@formkit/core": "^1.4.0",
+    "fuse.js": "^6.6.2"
   },
   "devDependencies": {
     "@halo-dev/ui-plugin-bundler-kit": "^1.0.0",

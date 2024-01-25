@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+    th:replace="~{plugin:plugin-friends:modules/layout :: html(content = ~{::content},head = ~{::head})}">
+<th:block th:fragment="head">
+    <head th:replace="~{plugin:plugin-friends:modules/head::head('提交博客 - 朋友圈！', '提交博客', '管理页面提交博客。')}">
+    </head>
+</th:block>
+<th:block th:fragment="content">
+    <main class="main">
+        <article class="first-entry home-info">
+            <div class="entry-content">
+                <p></p>
+                <ul>
+                    <li>
+                        <strong>欢迎在这里提交您的博客，请使用下方表单提交，一般在</strong>
+                        <strong style="color: #cb2e58;">24</strong>
+                        <strong>小时之内会得到审核！</strong>
+                    </li>
+                </ul>
+                <p></p>
+            </div>
+        </article>
+        <header class="post-header">
+            <h3 class="post-title">
+                提交博客
+            </h3>
+        </header>
+        <div class="blog-requests">
+            <form onsubmit="return false">
+                <div class="requests-form-container">
+                    <div class="key-value-entry">
+                        <div for="author" class="label">
+                            <p class="required">博客名称 *</p>
+                        </div>
+                        <div class="field">
+                            <input style="font-size: 14px" name="name" id="name" autocomplete="name" required="required"
+                                placeholder="您的博客名称" />
+                        </div>
+                    </div>
+                    <div for="rssAddress" class="key-value-entry">
+                        <div class="label">
+                            <p class="required">RSS 地址 *</p>
+                        </div>
+                        <div class="field">
+                            <input style="font-size: 14px" id="rssAddress" name="rssAddress" required="required"
+                                placeholder="用于抓取文章" />
+                        </div>
+                    </div>
+                    <div class="key-value-entry">
+                        <div class="label" for="email">
+                            <p class="required">博主邮箱 *</p>
+                        </div>
+                        <div class="field">
+                            <input style="font-size: 14px" name="adminEmail" id="email"
+                                placeholder="用于展示 Gravatar 头像，以及获取通知" autocomplete="email" required="required" />
+                        </div>
+                    </div>
+                    <div class="key-value-entry">
+                        <div class="label" for="description">
+                            <p class="required">博客描述 *</p>
+                        </div>
+                        <div class="field">
+                            <textarea style="font-size: 14px" name="description" id="description"
+                                placeholder="描述一下您的博客，建议 100 字以内" required="required"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="key-value-entry">
+                        <input type="submit" value="提交" onclick="addComment();" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+    <script>
+        function addComment() {
+            var author = document.getElementById("name") && document.getElementById("name").value
+            var rssAddress = document.getElementById("rssAddress") && document.getElementById("rssAddress").value
+            var email = document.getElementById("email") && document.getElementById("email").value
+            var description = document.getElementById("description") && document.getElementById("description").value
+
+            console.log(author)
+            console.log(rssAddress)
+            console.log(email)
+            console.log(description)
+            if (author != null && rssAddress != '' && rssAddress != null && rssAddress != '' && email != null && email != '' && description != null && description != '') {
+                param = {
+                    metadata: {
+                        name: "",
+                        generateName: "friend-",
+                    },
+                    status: {
+                        statusType: 'OK',
+                        code: 200,
+                    },
+                    spec: {
+                        selfSubmitted: true,
+                        displayName: author,
+                        adminEmail: email,
+                        logo: "",
+                        rssUrl: rssAddress,
+                        link: "",
+                        description: description,
+                        submittedType: 'SUBMITTED',
+                        reason: '等待审核'
+                    },
+                    kind: "Friend",
+                    apiVersion: "friend.moony.la/v1alpha1",
+                }
+                axios.post(
+                    "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendRequest",
+                    JSON.stringify(param),
+                    {
+                        withCredentials: true,
+                        headers: {
+                            "Content-Type": "application/json; charset=utf-8",
+                        },
+                    }).then((res) => {
+                         window.location.href = "/blog-requests";
+                    }).catch(function (error) {
+                         alert(error.response.data.detail);
+                    })
+            }
+
+
+        }
+    </script>
+</th:block>
+
+</html>

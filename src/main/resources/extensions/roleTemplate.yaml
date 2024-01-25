@@ -1,6 +1,23 @@
 apiVersion: v1alpha1
 kind: Role
 metadata:
+  name: role-template-friends-template-view
+  labels:
+    rbac.authorization.halo.run/aggregate-to-anonymous: "true"
+    halo.run/role-template: "true"
+    halo.run/hidden: "true"
+  annotations:
+    rbac.authorization.halo.run/display-name: "查看朋友圈提交模板"
+rules:
+  - apiGroups: ["api.plugin.halo.run"]
+    resources: ["plugins/friendRequest"]
+    verbs: ["create"]
+
+---
+
+apiVersion: v1alpha1
+kind: Role
+metadata:
   name: role-template-friends-view
   labels:
     halo.run/role-template: "true"
@@ -17,7 +34,9 @@ rules:
     resources: [ "plugins/friendposts","plugins/friends" ]
     resourceNames: [ "plugin-friends" ]
     verbs: [ "get", "list" ]
+
 ---
+
 apiVersion: v1alpha1
 kind: Role
 metadata:

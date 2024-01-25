@@ -8,7 +8,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import la.moony.friends.extension.CronFriendPost;
+import la.moony.friends.service.BlogStatusService;
 import la.moony.friends.service.FriendPostService;
+import la.moony.friends.service.FriendService;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
@@ -30,9 +32,16 @@ public class CronCronFriendPostReconciler  implements Reconciler<Reconciler.Requ
 
     private final FriendPostService friendPostService;
 
-    public CronCronFriendPostReconciler(ExtensionClient client, FriendPostService friendPostService) {
+    private final BlogStatusService blogStatusService;
+
+    private final FriendService friendService;
+
+    public CronCronFriendPostReconciler(ExtensionClient client, FriendPostService friendPostService,
+        BlogStatusService blogStatusService, FriendService friendService) {
         this.client = client;
         this.friendPostService = friendPostService;
+        this.blogStatusService = blogStatusService;
+        this.friendService = friendService;
         this.clock = Clock.systemDefaultZone();
     }
 
@@ -85,7 +94,12 @@ public class CronCronFriendPostReconciler  implements Reconciler<Reconciler.Requ
                                 this.client.update(cronFriendPost);
                                 return new Reconciler.Result(true, Duration.between(now, nextFromNow));
                             } else {
-                                friendPostService.synchronizationFriend();
+
+                                this.blogStatusService.detectBlogStatus();
+
+                                this.friendService.processNewRequest();
+
+                                this.friendPostService.synchronizationFriend();
 
                                 ZonedDateTime zonedNow = now.atZone(zoneId);
                                 ZonedDateTime scheduleTimestamp = now.atZone(zoneId);

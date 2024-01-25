@@ -1,0 +1,64 @@
+<main th:fragment="main" class="main">
+    <th:block th:with="stats = ${friendFinder.statistical()}">
+        <article class="first-entry home-info">
+            <div class="entry-content">
+                <p></p>
+                <ul>
+                    <li>
+                        <strong>朋友圈，提供博客收录、文章聚合展示等功能，欢迎来这里发现有趣的博客并尝试与博主成为朋友！如果你拥有一个独立博客，就赶快</strong><strong>「<a href="/blog-requests/add">申请加入</a>」</strong><strong>吧，逾 </strong>
+                        <strong style="color: #cb2e58;" th:text="${stats.friendsNum}"></strong>
+                        <strong>位博友正在等你哦！</strong>
+                    </li>
+                </ul>
+                <p></p>
+            </div>
+        </article>
+    </th:block>
+    <div id="searchbox">
+        <input id="searchInput" autofocus="" placeholder="搜索文章 ↵" aria-label="search" type="search" autocomplete="off">
+    </div>
+    <!-- <div class="switch-sort-type">
+        <ul class="menu">
+            <li>
+                <a href="/friends?sort=recommended" title="推荐">
+                    <span>推荐</span>
+                </a>
+            </li>
+            <li>
+                <a href="/friends?sort=latest" title="最新">
+                    <span>最新</span>
+                </a>
+            </li>
+        </ul>
+    </div> -->
+    <article th:each="postInfo, iterstat: ${friends.items}" th:class="post-entry" th:with="spec = ${postInfo.spec}">
+        <header class="entry-header">
+            <a target="_blank" th:href="${spec.link}"><h4 th:text="${spec.title}"></h4></a>
+        </header>
+        <div class="entry-content">
+            <p th:text="${spec.description}"></p>
+        </div>
+        <footer class="entry-footer">
+            <div class="flex-item">
+                <a th:href="'/blogs/' + ${postInfo.spec.friendName}">
+                    <img th:src="${spec.logo}"/>
+                </a>
+            </div>
+            <div class="flex-item">
+                <a th:text="${spec.author}" th:href="'/blogs/' + ${postInfo.spec.friendName}"></a>
+            </div>
+            <div class="flex-item">
+                · <span th:text="${#dates.format(spec.pubDate, 'yyyy/MM/dd')}"></span> · 
+            </div>
+            <div class="flex-item">
+                <a target="_blank" th:href="${spec.link}">
+                    <div class="sharing">
+                        <img th:src="@{/plugins/plugin-friends/assets/static/images/share/share-black.png}" width="20px" height="20px">
+                    </div>
+                </a>
+            </div>
+        </footer>
+    </article>
+    <footer th:replace="~{plugin:plugin-friends:modules/footer/page-footer::page-footer(${friends},'/friends')}"></footer>
+    
+</main>

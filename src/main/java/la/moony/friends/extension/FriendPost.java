@@ -6,7 +6,6 @@ import lombok.ToString;
 import run.halo.app.extension.AbstractExtension;
 import run.halo.app.extension.GVK;
 import java.time.Instant;
-import java.util.Date;
 
 @Data
 @ToString
@@ -17,6 +16,8 @@ public class FriendPost extends AbstractExtension {
 
 
     private Spec spec;
+
+    private Status status;
 
     @Data
     public static class Spec {
@@ -34,7 +35,14 @@ public class FriendPost extends AbstractExtension {
 
         private Instant pubDate;
 
+        private String friendName;
+    }
 
+
+    @Data
+    public static class Status {
+        private Boolean recommended = false;
+        private Boolean pinned = false;
     }
 
 }

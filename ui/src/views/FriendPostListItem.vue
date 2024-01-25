@@ -1,27 +1,97 @@
 <script lang="ts" setup>
-import { VCard, VEntity, VEntityField,IconRefreshLine,Dialog,VButton,VEmpty,VLoading,VPagination,Toast, VSpace, VDropdownItem} from "@halo-dev/components";
-import { useQueryClient } from "@tanstack/vue-query";
-import {useFriendPostFetch} from "@/api/use-friend";
-import { ref } from "vue";
+import { 
+  VCard,
+  IconRefreshLine,
+  Dialog,
+  VButton,
+  VEmpty,
+  VLoading,
+  VPagination,
+  Toast,
+  VSpace,
+  IconCloseCircle} from "@halo-dev/components";
+import {useQuery, useQueryClient} from "@tanstack/vue-query";
+import {computed, ref, watch} from "vue";
 import service from "@/api/request";
-import {FriendPost} from "@/types";
 import { formatDatetime } from "@/utils/date";
+import type {FriendPostList} from "@/types";
+import {useRouteQuery} from "@vueuse/router";
+import UserFilterDropdown from "@/components/filter/UserFilterDropdown.vue";
 
 const queryClient = useQueryClient();
 
 const selectedFriendPosts = ref<string[]>([]);
 const checkedAll = ref(false);
+const selectedSort = useRouteQuery<string | undefined>("sort");
+const selectedAuthor = useRouteQuery<string | undefined>("author");
 
 const page = ref(1);
 const size = ref(20);
 const keyword = ref("");
 const searchText = ref("");
+const total = ref(0);
 
-const { friendPosts, isLoading, total, refetch } = useFriendPostFetch(
-  page,
-  size,
-  keyword
+
+watch(
+  () => [
+    selectedAuthor.value,
+    selectedSort.value,
+    keyword.value,
+  ],
+  () => {
+    page.value = 1;
+  }
 );
+
+function handleClearFilters() {
+  selectedAuthor.value = undefined;
+  selectedSort.value = undefined;
+}
+
+const hasFilters = computed(() => {
+  return (
+    selectedAuthor.value ||
+    selectedSort.value 
+  );
+});
+
+const {
+  data: friendPosts,
+  isLoading,
+  isFetching,
+  refetch,
+} = useQuery({
+  queryKey: ["friendPosts", page, size,selectedSort,selectedAuthor,keyword],
+  queryFn: async () => {
+
+    let authors: string | undefined;
+    
+    if (selectedAuthor.value) {
+      authors = selectedAuthor.value;
+    }
+    const { data } = await service.get<FriendPostList>(
+      "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendposts",
+      {
+        params: {
+          page: page.value,
+          size: size.value,
+          sort: selectedSort.value,
+          author : authors,
+          keyword: keyword?.value
+        },
+      }
+    );
+    total.value = data.total;
+    return data.items;
+  },
+  refetchInterval: (data) =>  {
+    const deletingFriend = data?.filter(
+      (friend) => !!friend.metadata.deletionTimestamp
+    );
+    return deletingFriend?.length ? 1000 : false;
+  },
+});
+
 
 const handleCheckAllChange = (e: Event) => {
   const { checked } = e.target as HTMLInputElement;
@@ -49,7 +119,6 @@ const handleDeleteInBatch = () => {
         if (promises) {
           await Promise.all(promises);
         }
-
         selectedFriendPosts.value.length = 0;
         checkedAll.value = false;
 
@@ -57,11 +126,18 @@ const handleDeleteInBatch = () => {
       } catch (e) {
         console.error(e);
       } finally {
-        queryClient.invalidateQueries({ queryKey: ["friend-posts"] });
+        queryClient.invalidateQueries({ queryKey: ["friendPosts"] });
       }
     },
   });
 };
+function handleReset() {
+  keyword.value = "";
+  searchText.value = "";
+}
+function onKeywordChange() {
+  keyword.value = searchText.value;
+}
 
 </script>
 
@@ -70,48 +146,79 @@ const handleDeleteInBatch = () => {
   <VCard :body-class="['!p-0']">
     <template #header>
       <div class="block w-full bg-gray-50 px-4 py-3">
-        <div class="relative flex flex-col items-start sm:flex-row sm:items-center" >
-          <div class="mr-4 hidden items-center sm:flex" >
+        <div class="relative flex flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center" >
+          <div class="hidden items-center sm:flex" >
             <input
               v-model="checkedAll"
-              class="h-4 w-4 rounded border-gray-300 text-indigo-600"
               type="checkbox"
               @change="handleCheckAllChange"
             />
           </div>
           <div class="flex w-full flex-1 items-center sm:w-auto" >
-            <div class="flex items-center gap-2" >
-              <FormKit
-                v-if="!selectedFriendPosts.length"
-                v-model="searchText"
-                outer-class="!p-0"
-                placeholder="输入关键词搜索"
-                type="text"
-                @keyup.enter="keyword = searchText"
-              ></FormKit>
-            </div>
-            <VSpace v-if="selectedFriendPosts.length" v-permission="['plugin:friends:manage']">
+            <FormKit
+              v-if="!selectedFriendPosts.length"
+              v-model="searchText"
+              placeholder="输入关键词搜索"
+              type="text"
+              outer-class="!moments-p-0 moments-mr-2"
+              @keyup.enter="onKeywordChange"
+            >
+              <template v-if="keyword" #suffix>
+                <div
+                  class="group flex h-full cursor-pointer items-center bg-white px-2 transition-all hover:bg-gray-50"
+                  @click="handleReset"
+                >
+                  <IconCloseCircle
+                    class="h-4 w-4 text-gray-500 group-hover:text-gray-700"
+                  />
+                </div>
+              </template>
+            </FormKit>
+            <VSpace v-else v-permission="['plugin:friends:manage']">
               <VButton type="danger" @click="handleDeleteInBatch">
                 删除
               </VButton>
             </VSpace>
           </div>
-          <div class="mt-4 flex sm:mt-0">
-            <VSpace spacing="lg">
+          <VSpace spacing="lg" class="flex-wrap">
+              <FilterCleanButton
+                v-if="hasFilters"
+                @click="handleClearFilters"
+              />
+              <UserFilterDropdown
+                v-model="selectedAuthor"
+                label="作者"
+              />
+              <FilterDropdown
+                v-model="selectedSort"
+                label="排序"
+                :items="[
+                      {
+                        label: '默认',
+                      },
+                      {
+                        label: '较近创建',
+                        value: 'pubDate,desc',
+                      },
+                      {
+                        label: '较早创建',
+                        value: 'pubDate,asc',
+                      },
+                    ]"
+              />
               <div class="flex flex-row gap-2">
                 <div
                   class="group cursor-pointer rounded p-1 hover:bg-gray-200"
                   @click="refetch()"
                 >
                   <IconRefreshLine
-                    v-tooltip="`刷新`"
-                    :class="{ 'animate-spin text-gray-900': isLoading }"
+                    v-tooltip="'刷新'"
+                    :class="{ 'animate-spin text-gray-900': isFetching }"
                     class="h-4 w-4 text-gray-600 group-hover:text-gray-900"
                   />
                 </div>
               </div>
-            </VSpace>
-          </div>
+          </VSpace>
         </div>
       </div>
     </template>

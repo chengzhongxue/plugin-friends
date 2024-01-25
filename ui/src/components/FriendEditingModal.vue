@@ -26,12 +26,17 @@ const initialFormState: Friend = {
     name: "",
     generateName: "friend-",
   },
+  status:{
+    statusType :'OK',
+    code: 200
+  },
   spec: {
     displayName: "",
     logo:"",
     rssUrl: "",
     link: "",
     description: "",
+    submittedType: 'APPROVED'
   },
   kind: "Friend",
   apiVersion: "friend.moony.la/v1alpha1",
@@ -159,7 +164,39 @@ const handleSaveFriend = async () => {
             label="订阅地址"
             help="W3C标准规则"
           ></FormKit>
+          <FormKit
+            v-if="isUpdateMode"
+            type="text"
+            name="displayName"
+            label="网站名称"
+          ></FormKit>
           <FormKit type="attachment" name="logo" label="Logo"></FormKit>
+          <FormKit
+            v-if="isUpdateMode"
+            type="url"
+            name="link"
+            label="网站地址"
+          ></FormKit>
+          <FormKit v-if="isUpdateMode" type="textarea" name="description" label="描述"></FormKit>
+          <FormKit
+            v-if="isUpdateMode"
+            :options="[
+              { label: '提交', value: 'SUBMITTED' },
+              { label: '系统检查有效', value: 'SYSTEM_CHECK_VALID' },
+              { label: '系统检查无效', value: 'SYSTEM_CHECK_INVALID' },
+              { label: '批准', value: 'APPROVED' },
+              { label: '驳回', value: 'REJECTED' },
+            ]"
+            label="审核类型"
+            name="submittedType"
+            type="select"
+          ></FormKit>
+          <FormKit
+            v-if="isUpdateMode"
+            type="text"
+            name="reason"
+            label="审核说明"
+          ></FormKit>
         </div>
       </div>
     </FormKit>

@@ -29,10 +29,42 @@ export interface FriendMetadata {
 
 export interface Friend {
   spec: FriendSpec;
+  status: BlogStatus;
   apiVersion: string;
   kind: string;
   metadata: FriendMetadata;
 }
+
+
+export interface BlogStatus {
+
+  statusType?: StatusTypeEnum;
+  code?: number;
+  selfSubmitted?: boolean;
+}
+
+export type StatusTypeEnum =
+  (typeof StatusTypeEnum)[keyof typeof StatusTypeEnum];
+
+declare const StatusTypeEnum: {
+  readonly Ok: "OK";
+  readonly Timeout: "TIMEOUT";
+  readonly Can_not_be_accessed: "CAN_NOT_BE_ACCESSED";
+};
+
+export type SubmittedType =
+  (typeof SubmittedType)[keyof typeof SubmittedType];
+
+declare const SubmittedType: {
+  readonly Submitted: "SUBMITTED";
+  readonly System_check_valid: "SYSTEM_CHECK_VALID";
+  readonly System_check_invalid: "SYSTEM_CHECK_INVALID";
+  readonly Approved: "APPROVED";
+  readonly Rejected: "REJECTED";
+};
+
+
+
 
 
 export interface FriendSpec {
@@ -43,9 +75,13 @@ export interface FriendSpec {
   description?: string;
   status?:number;
   pullTime?:string;
+  selfSubmitted?: boolean;
+  submittedType?: SubmittedType;
+  
+  reason?: string;
 }
 
-export interface friendList {
+export interface FriendList {
   page: number;
   size: number;
   total: number;
@@ -58,11 +94,11 @@ export interface friendList {
 }
 
 
-export interface FriendPostList<T> {
+export interface FriendPostList {
   page: number;
   size: number;
   total: number;
-  items: Array<T>;
+  items: Array<FriendPost>;
   first: boolean;
   last: boolean;
   hasNext: boolean;

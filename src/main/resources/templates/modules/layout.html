@@ -1,14 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" th:fragment="html (content)">
-<head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${title}"></title>
-    <link rel="stylesheet" th:href="@{/plugins/plugin-friends/assets/static/dist/friends.css}" />
-</head>
-<body>
+<html lang="en" th:fragment="html (content,head)">
+<th:block th:replace="${head}" />
+<body class="list" id="top">
+<script th:src="@{/plugins/plugin-friends/assets/static/js/theme-settings.js}" type="text/javascript"></script>
+<header th:replace="~{plugin:plugin-friends:modules/header/header::header}"></header>
 <th:block th:replace="${content}" />
-<script type="text/javascript" th:src="@{/plugins/plugin-friends/assets/static/dist/fcircle.js}"></script>
+<footer class="footer-block">
+    <div
+            th:replace="~{plugin:plugin-friends:modules/footer/blog_summary::blog_summary}">
+    </div>
+    <div th:replace="~{plugin:plugin-friends:modules/footer/contact::contact}"></div>
+</footer>
+<div th:insert="~{plugin:plugin-friends:modules/plugin/go_to_top::go_to_top}"></div>
+<script th:src="@{/plugins/plugin-friends/assets/static/js/highlight-menu.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/plugin-friends/assets/static/js/highlight-sort-type.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/plugin-friends/assets/static/js/scroll.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/plugin-friends/assets/static/js/theme-listener.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/plugin-friends/assets/static/js/to-top.js}" type="text/javascript"></script>
+<script th:src="@{/plugins/plugin-friends/assets/static/js/axios.min.js}" id="axios.min-js"></script>
 </body>
+
 </html>

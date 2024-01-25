@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+    th:replace="~{plugin:plugin-friends:modules/layout :: html(content = ~{::content},head = ~{::head})}">
+<th:block th:fragment="head">
+
+    <head
+        th:replace="~{plugin:plugin-friends:modules/head::head(${friend.spec.displayName} + ' - 朋友圈！', ${friend.spec.displayName}, '「' + ${friend.spec.displayName} + '」：' + ${friend.spec.description})}">
+    </head>
+</th:block>
+<th:block th:fragment="content">
+    <main class="main" th:with="blogInfo = ${friend}">
+        <div class="blog-detail-main">
+            <header class="header-info">
+                <div class="status-info" th:if="${#strings.equals(blogInfo.status.statusType, 'OK')}">
+                    <div style="background-color: #0dcb0d;" class="status-icon"></div>
+                    <p th:text="运行良好"></p>
+                    <span class="tooltiptext">该博客运行状态良好</span>
+                </div>
+                <div class="status-info" th:unless="${#strings.equals(blogInfo.status.statusType, 'OK')}">
+                    <div style="background-color: red;" class="status-icon"></div>
+                    <p th:text="无法访问"></p>
+                    <span class="tooltiptext">该博客目前无法访问</span>
+                </div>
+                <div class="submitted-info">
+                    <img th:src="@{/plugins/plugin-friends/assets/static/images/blog_detail/info-icon.png}">
+                    <p th:text="${blogInfo.spec.selfSubmitted ? '自行提交' : '后台收录'}"></p>
+                    <span th:text="|该博客由博主自行提交于 ${#dates.format(blogInfo.metadata.creationTimestamp, 'yyyy/MM/dd')}|"
+                        class="tooltiptext"></span>
+                </div>
+            </header>
+
+            <header class="blog-detail-header">
+                <div class="icon">
+                    <a th:href="${blogInfo.spec.link}">
+                        <img th:src="${blogInfo.spec.logo}" />
+                    </a>
+                </div>
+                <div class="title">
+                    <a th:href="${blogInfo.spec.link}">
+                        <h3 th:text="${blogInfo.spec.displayName}"></h3>
+                    </a>
+                </div>
+                <div class="domain">
+                    <a th:text="${blogInfo.spec.link}" th:href="${blogInfo.spec.link}"></a>
+                    <a th:href="${blogInfo.spec.link}">
+                        <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24"
+                            height="12" width="12">
+                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                            <path d="M15 3h6v6"></path>
+                            <path d="M10 14L21 3"></path>
+                        </svg>
+                    </a>
+                </div>
+                <div class="description">
+                    <p th:text="${blogInfo.spec.description}"></p>
+                </div>
+            </header>
+        </div>
+
+        <th:block th:with="posts = ${friendFinder.listByUrl(1,100,blogInfo.spec.link)}">
+            <th:block th:if="${not #lists.isEmpty(posts.items)}">
+                <footer class="blog-detail-summary">
+                    <div class="flex-item one">
+                        <p style="font-size: 16px; color: var(--secondary);">文章收录</p>
+                        <p th:text="${posts.total}"></p>
+                    </div>
+                    <!-- <div class="flex-item two">
+                        <p style="font-size: 16px; color: var(--secondary);">文章浏览</p>
+                        <p th:text="${blogInfo.accessCount}"></p>
+                    </div> -->
+                    <div class="flex-item three">
+                        <p style="font-size: 16px; color: var(--secondary);">最近更新</p>
+                        <p th:text="${#dates.format(posts.items[0].spec.pubDate, 'yyyy/MM/dd')}"></p>
+                    </div>
+                    <div class="flex-item four">
+                        <p style="font-size: 16px; color: var(--secondary);">收录时间</p>
+                        <p th:text="${#dates.format(blogInfo.metadata.creationTimestamp, 'yyyy/MM/dd')}"></p>
+                    </div>
+                </footer>
+
+                <!-- <div class="blog-detail-charts">
+                    <div class="charts-title">
+                        <h4>数据统计</h4>
+                    </div>
+                    <div id="access-charts"></div>
+                    <div id="publish-charts"></div>
+                </div> -->
+
+
+                <div class="blog-detail-articles">
+                    <div class="articles-title">
+                        <h4>收录文章</h4>
+                    </div>
+                    <div class="articles-container">
+                        <table style="display: table; table-layout: fixed;">
+                            <tbody>
+                                <tr th:each="post, iterstat: ${posts.items}">
+                                    <td style="width: 20%"><text style="margin-right: 6px;"
+                                            th:text="${#dates.format(post.spec.pubDate, 'yyyy/MM/dd')}"></text>
+                                    </td>
+
+                                    <td style="width: 80%">
+                                        <!-- blog status ok? -->
+                                        <a th:if="${#strings.equals(blogInfo.status.statusType, 'OK')}"
+                                            th:text="${post.spec.title}" th:href="${post.spec.link}"></a>
+                                        <!-- blog status un ok? -->
+                                        <a th:unless="${#strings.equals(blogInfo.status.statusType, 'OK')}"
+                                            th:text="${post.spec.title}" th:href="${post.spec.link}"></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="articles-footer" th:if="${posts.total >= 100}">
+                        <p>* 仅显示最新100篇文章</p>
+                    </div>
+                </div>
+            </th:block>
+        </th:block>
+
+        <div class="blog-detail-random-blogs">
+            <div class="blogs-title">
+                <h4>随机链接</h4>
+            </div>
+            <div class="blogs-container" th:with="friends = ${friendFinder.friendListAll()}">
+                <div class="blog-entry" th:each="i : ${#numbers.sequence(1, 2)}">
+                    <th:block th:with="number = ${#numbers.formatDecimal(T(java.lang.Math).floor(T(java.lang.Math).random()*friends.size),1,0)},
+                    _friend = ${friends[number]}">
+                        <header class="icon-and-title">
+                            <div class="flex-item">
+                                <a th:href="'/blogs/' + ${_friend.metadata.name}">
+                                    <img th:src="${_friend.spec.logo}" />
+                                </a>
+                            </div>
+                            <div class="flex-item">
+                                <a th:href="'/blogs/' + ${_friend.metadata.name}">
+                                    <h4 th:text="${_friend.spec.displayName}"></h4>
+                                </a>
+                            </div>
+                        </header>
+                        <div class="description">
+                            <p th:text="${_friend.spec.description}"></p>
+                        </div>
+                    </th:block>
+
+
+                </div>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+</html>
