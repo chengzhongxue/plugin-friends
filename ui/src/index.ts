@@ -21,7 +21,7 @@ export default definePlugin({
             name: "朋友圈",
             group: "content",
             icon: markRaw(IconLink),
-            priority: 0,
+            priority: 21,
           },
         },
       },

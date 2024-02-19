@@ -50,6 +50,7 @@ public class FriendRouter {
             .GET("/blogs/{name:\\S+}",this::handlerBlogDefault)
             .GET("/blog-requests/add",this::handlerBlogRequestsAddDefault)
             .GET("/blog-requests",this::handlerBlogRequestsDefault)
+            .GET("/blog-requests/page/{page:\\d+}",this::handlerBlogRequestsDefault)
             .GET("/blog-requests/{name:\\S+}",this::handlerBlogRequestsDetailDefault)
             .build();
     }
