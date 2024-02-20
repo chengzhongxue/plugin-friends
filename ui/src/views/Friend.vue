@@ -16,11 +16,6 @@ import {
 
 const tabs = shallowRef([
   {
-    id: "cron",
-    label: "定时任务",
-    component: markRaw(Cron),
-  },
-  {
     id: "friend",
     label: "订阅",
     component: markRaw(FriendListItem),
@@ -30,6 +25,11 @@ const tabs = shallowRef([
     label: "订阅文章",
     component: markRaw(FriendPostListItem),
   },
+  {
+    id: "cron",
+    label: "定时任务",
+    component: markRaw(Cron),
+  }
   
 ]);
 

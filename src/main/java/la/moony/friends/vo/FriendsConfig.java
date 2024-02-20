@@ -14,9 +14,18 @@ public class FriendsConfig {
 
     private Gravatar gravatar;
 
+    private Email email;
+
     @Data
     public static class Gravatar {
         private String apiUrl;
         private String apiParam;
+    }
+
+    @Data
+    public static class Email {
+        private boolean sendEmail;
+        private String adminEmail;
+        private String domain;
     }
 }

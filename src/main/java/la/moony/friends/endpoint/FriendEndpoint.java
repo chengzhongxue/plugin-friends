@@ -2,6 +2,7 @@ package la.moony.friends.endpoint;
 
 import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
+import la.moony.friends.finders.FriendFinder;
 import la.moony.friends.query.FriendPostQuery;
 import la.moony.friends.query.FriendQuery;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -22,9 +23,11 @@ public class FriendEndpoint implements CustomEndpoint {
     private final String friendTag = "api.plugin.halo.run/v1alpha1/Friend";
     private final String friendPostTag = "api.plugin.halo.run/v1alpha1/FriendPost";
 
+    private final FriendFinder friendFinder;
     private final ReactiveExtensionClient client;
 
-    public FriendEndpoint(ReactiveExtensionClient client) {
+    public FriendEndpoint(FriendFinder friendFinder, ReactiveExtensionClient client) {
+        this.friendFinder = friendFinder;
         this.client = client;
     }
 
@@ -41,6 +44,10 @@ public class FriendEndpoint implements CustomEndpoint {
                     .description("List friendPost.")
                     .tag(friendPostTag);
                 QueryParamBuildUtil.buildParametersFromType(builder, FriendPostQuery.class);
+            }).GET("plugins/plugin-friends/blogs", this::listBlogs, builder -> {
+                builder.operationId("listBlogs")
+                    .description("List blogs.")
+                    .tag(friendPostTag);
             }).build();
     }
 
@@ -62,6 +69,11 @@ public class FriendEndpoint implements CustomEndpoint {
         FriendPostQuery friendPostQuery = new FriendPostQuery(request.exchange());
         return listFriendPost(friendPostQuery)
             .flatMap(friendPosts -> ServerResponse.ok().bodyValue(friendPosts));
+    }
+
+    Mono<ServerResponse> listBlogs(ServerRequest request) {
+        return friendFinder.friendListAll().collectList()
+            .flatMap(result -> ServerResponse.ok().bodyValue(result));
     }
 
     private Mono<ListResult<FriendPost>> listFriendPost(FriendPostQuery query) {

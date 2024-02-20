@@ -99,8 +99,8 @@ const handleSaveFriend = async () => {
 
   try {
     saving.value = true;
-    await apiClient.put<Friend>(
-      `/apis/friend.moony.la/v1alpha1/friends/${formState.value.metadata.name}`,
+    await apiClient.post<Friend>(
+      `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friend/Audit`,
       formState.value
     );
     Toast.success("保存成功");
@@ -166,11 +166,11 @@ const handleSaveFriend = async () => {
         <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
           <FormKit
             :options="[
-              { label: '提交', value: 'SUBMITTED' },
-              { label: '系统检查有效', value: 'SYSTEM_CHECK_VALID' },
-              { label: '系统检查无效', value: 'SYSTEM_CHECK_INVALID' },
-              { label: '批准', value: 'APPROVED' },
-              { label: '驳回', value: 'REJECTED' },
+              { label: '提交', value: 'SUBMITTED' , attrs: { disabled: true } },
+              { label: '系统检查有效', value: 'SYSTEM_CHECK_VALID' , attrs: { disabled: true } },
+              { label: '系统检查无效', value: 'SYSTEM_CHECK_INVALID' , attrs: { disabled: true } },
+              { label: '批准', value: 'APPROVED'},
+              { label: '驳回', value: 'REJECTED'},
             ]"
             label="审核类型"
             name="submittedType"

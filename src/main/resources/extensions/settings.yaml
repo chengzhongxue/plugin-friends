@@ -34,3 +34,30 @@ spec:
               name: apiParam
               label: API参数
               validation: required
+        - $formkit: group
+          name: email
+          label: 邮件通知
+          value:
+            sendEmail: false
+          children:
+            - $formkit: radio
+              name: sendEmail
+              id: sendEmail
+              label: 是否发送邮件通知
+              value: false
+              options:
+                - value: true
+                  label: 开启
+                - value: false
+                  label: 关闭
+            - $formkit: text
+              if: "$get(sendEmail).value === true"
+              name: adminEmail
+              label: 管理员邮箱
+              help: 管理员邮箱，用于接收邮件通知
+              validation: email
+            - $formkit: text
+              if: "$get(sendEmail).value === true"
+              name: domain
+              label: 本站域名
+              help: 填写站点域名，如：moony.la

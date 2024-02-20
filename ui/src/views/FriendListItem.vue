@@ -583,7 +583,8 @@ function onKeywordChange() {
                 />
               </template>
               <template #dropdownItems >
-                <VDropdownItem v-permission="['plugin:friends:manage']" @click="handleOpenAuditModal(friend)">
+                <VDropdownItem v-if="friend.spec.submittedType != 'SYSTEM_CHECK_VALID' && friend.spec.submittedType != 'APPROVED'" 
+                               v-permission="['plugin:friends:manage']" @click="handleOpenAuditModal(friend)">
                   审核
                 </VDropdownItem>
                 <VDropdownItem v-permission="['plugin:friends:manage']" @click="handleOpenCreateModal(friend)">
@@ -610,9 +611,14 @@ function onKeywordChange() {
 
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
+
 .entity-field-wrapper {
   max-width: 25rem;
+}
+
+li.formkit-option[data-disabled="true"]{
+  opacity: 0.5;
 }
 
 </style>

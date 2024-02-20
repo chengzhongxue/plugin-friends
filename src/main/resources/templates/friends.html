@@ -9,6 +9,10 @@
 <th:block th:fragment="content">
     <main th:replace="~{plugin:plugin-friends:modules/home/main}"></main>
     <script th:src="@{/plugins/plugin-friends/assets/static/js/home-search.js}" type="text/javascript"></script>
+    <script th:src="@{/plugins/plugin-friends/assets/static/js/main.js}" type="text/javascript"></script>
+    <script>
+        friends.addPopularBloggers();
+    </script>
 </th:block>
 
 </html>

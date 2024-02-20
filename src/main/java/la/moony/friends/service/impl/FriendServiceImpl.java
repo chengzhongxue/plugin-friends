@@ -1,13 +1,19 @@
 package la.moony.friends.service.impl;
 
+import la.moony.friends.enums.NotificationType;
 import la.moony.friends.extension.Friend;
 import la.moony.friends.service.BlogCrawlerService;
 import la.moony.friends.service.FriendService;
+import la.moony.friends.util.EmailService;
+import la.moony.friends.vo.FriendsConfig;
 import la.moony.friends.vo.RSSInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+import run.halo.app.extension.ConfigMap;
 import run.halo.app.extension.ExtensionClient;
+import run.halo.app.infra.utils.JsonUtils;
 import java.util.List;
 
 @Component
@@ -19,9 +25,13 @@ public class FriendServiceImpl  implements FriendService {
 
     private final BlogCrawlerService blogCrawlerService;
 
-    public FriendServiceImpl(ExtensionClient client, BlogCrawlerService blogCrawlerService) {
+    private final EmailService emailService;
+
+    public FriendServiceImpl(ExtensionClient client, BlogCrawlerService blogCrawlerService,
+        EmailService emailService) {
         this.client = client;
         this.blogCrawlerService = blogCrawlerService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -46,12 +56,14 @@ public class FriendServiceImpl  implements FriendService {
                     friend.getSpec().setSubmittedType(Friend.Spec.SubmittedType.SYSTEM_CHECK_INVALID);
                     friend.getSpec().setReason("RSS 地址不正确，抓取不到正确内容！");
                     client.update(friend);
+                    emailService.sendMail(friend.getSpec().getAdminEmail() ,NotificationType.REJECTED, friend).subscribe();
                     return;
                 }
                 // success
                 friend.getSpec().setSubmittedType(Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID);
                 friend.getSpec().setReason("RSS 地址正确，系统检查有效。");
                 client.update(friend);
+                emailService.sendMail(friend.getSpec().getAdminEmail() ,NotificationType.AUDITED, friend).subscribe();
             });
 
             } catch (Exception e) {

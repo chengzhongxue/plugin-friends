@@ -1,8 +1,10 @@
 package la.moony.friends.endpoint;
 
+import la.moony.friends.enums.NotificationType;
 import la.moony.friends.extension.Friend;
 import la.moony.friends.finders.FriendFinder;
 import la.moony.friends.util.CommonUtils;
+import la.moony.friends.util.EmailService;
 import la.moony.friends.util.IpAddressUtils;
 import la.moony.friends.vo.FriendsConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +39,14 @@ public class FriendRequestEndpoint implements CustomEndpoint {
 
     private final ReactiveSettingFetcher settingFetcher;
 
+    private final EmailService emailService;
+
     public FriendRequestEndpoint(ReactiveExtensionClient client, FriendFinder friendFinder,
-        ReactiveSettingFetcher settingFetcher) {
+        ReactiveSettingFetcher settingFetcher, EmailService emailService) {
         this.client = client;
         this.friendFinder = friendFinder;
         this.settingFetcher = settingFetcher;
+        this.emailService = emailService;
     }
 
     @Override
@@ -70,6 +75,7 @@ public class FriendRequestEndpoint implements CustomEndpoint {
             });
         });
         return var10000.flatMap(client::create).flatMap((entry) -> {
+            emailService.sendMail(NotificationType.AUDIT, entry).subscribe();
             return ServerResponse.ok().bodyValue(entry);
         });
     }
