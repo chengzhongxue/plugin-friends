@@ -21,7 +21,7 @@ import {
   VSpace} from "@halo-dev/components";
 import {ref, computed, watch} from "vue";
 import type {Friend, FriendList} from "@/types";
-import service from "@/api/request";
+import apiClient from "@/utils/api-client";
 import { useQueryClient,useQuery} from "@tanstack/vue-query";
 import { formatDatetime,timeAgo } from "@/utils/date";
 import FriendEditingModal from "../components/FriendEditingModal.vue";
@@ -92,7 +92,7 @@ const {
 } = useQuery({
   queryKey: ["friends", page, size,selectedStatus,selectedSelfSubmitted,selectedSubmittedType,selectedSort,keyword],
   queryFn: async () => {
-    const { data } = await service.get<FriendList>(
+    const { data } = await apiClient.get<FriendList>(
       "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friends",
       {
         params: {
@@ -140,10 +140,10 @@ const handleDelete = (friend: Friend) => {
     confirmType: "danger",
     onConfirm: async () => {
       try {
-        await service.delete(
+        await apiClient.delete(
           `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByLink/${friend.metadata.name}`
         )
-        await service.delete(
+        await apiClient.delete(
           `/apis/friend.moony.la/v1alpha1/friends/${friend.metadata.name}`
         );
 
@@ -166,10 +166,10 @@ const handleDeleteInBatch = () => {
       try {
 
         const promises = selectedFriends.value.map((friend) => {
-          service.delete(
+          apiClient.delete(
             `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByLink/${friend}`
           )
-          return service.delete(`/apis/friend.moony.la/v1alpha1/friends/${friend}`);
+          return apiClient.delete(`/apis/friend.moony.la/v1alpha1/friends/${friend}`);
         });
         if (promises) {
           await Promise.all(promises);

@@ -12,7 +12,7 @@ import {
   IconCloseCircle} from "@halo-dev/components";
 import {useQuery, useQueryClient} from "@tanstack/vue-query";
 import {computed, ref, watch} from "vue";
-import service from "@/api/request";
+import apiClient from "@/utils/api-client";
 import { formatDatetime } from "@/utils/date";
 import type {FriendPostList} from "@/types";
 import {useRouteQuery} from "@vueuse/router";
@@ -69,7 +69,7 @@ const {
     if (selectedAuthor.value) {
       authors = selectedAuthor.value;
     }
-    const { data } = await service.get<FriendPostList>(
+    const { data } = await apiClient.get<FriendPostList>(
       "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendposts",
       {
         params: {
@@ -114,7 +114,7 @@ const handleDeleteInBatch = () => {
     onConfirm: async () => {
       try {
         const promises = selectedFriendPosts.value.map((friendPost) => {
-          return service.delete(`/apis/friend.moony.la/v1alpha1/friendposts/${friendPost}`);
+          return apiClient.delete(`/apis/friend.moony.la/v1alpha1/friendposts/${friendPost}`);
         });
         if (promises) {
           await Promise.all(promises);

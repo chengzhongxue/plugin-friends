@@ -2,7 +2,7 @@
 import { Toast, VButton, VModal, VSpace } from "@halo-dev/components";
 import { inject, ref, computed, nextTick, watch, type Ref } from "vue";
 import type { Friend } from "@/types";
-import apiClient from "@/api/request";
+import apiClient from "@/utils/api-client";
 import cloneDeep from "lodash.clonedeep";
 
 const props = withDefaults(

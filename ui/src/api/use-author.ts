@@ -1,5 +1,5 @@
 import type {Friend} from "@/types";
-import service from "@/api/request";
+import apiClient from "@/utils/api-client";
 import type { Ref } from "vue";
 import { onMounted, ref } from "vue";
 
@@ -21,7 +21,7 @@ export function useAuthorFetch(options?: {
   const handleFetchAuthors = async () => {
     try {
       loading.value = true;
-      const { data } = await service.get(
+      const { data } = await apiClient.get(
         "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friends"
       );
       authors.value = data.items;

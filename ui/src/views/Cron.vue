@@ -3,7 +3,7 @@ import {VButton} from "@halo-dev/components";
 import {computed, onMounted, ref} from "vue";
 import type {CronFriendPost, CronFriendPostList} from "@/types";
 import cloneDeep from "lodash.clonedeep";
-import apiClient from "@/api/request";
+import apiClient from "@/utils/api-client";
 
 const Se = "cron-default"
 
