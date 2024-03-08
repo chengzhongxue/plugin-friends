@@ -14,6 +14,7 @@ import java.time.Instant;
     version = "v1alpha1", singular = "friendpost", plural = "friendposts")
 public class FriendPost extends AbstractExtension {
 
+    public static final String REQUIRE_SYNC_ON_STARTUP_INDEX_NAME = "requireSyncOnStartup";
 
     private Spec spec;
 
@@ -43,6 +44,7 @@ public class FriendPost extends AbstractExtension {
     public static class Status {
         private Boolean recommended = false;
         private Boolean pinned = false;
+        private long observedVersion;
     }
 
 }

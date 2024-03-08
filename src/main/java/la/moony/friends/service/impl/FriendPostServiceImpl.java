@@ -4,197 +4,209 @@ package la.moony.friends.service.impl;
 import la.moony.friends.extension.CronFriendPost;
 import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
-import la.moony.friends.finders.FriendFinder;
-import la.moony.friends.rest.FriendPostController;
 import la.moony.friends.service.BlogCrawlerService;
-import la.moony.friends.service.BlogStatusService;
 import la.moony.friends.service.FriendPostService;
 import la.moony.friends.util.CommonUtils;
 import la.moony.friends.vo.RSSInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.util.comparator.Comparators;
-import run.halo.app.extension.ExtensionClient;
-import run.halo.app.extension.ListResult;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.Metadata;
+import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.index.query.QueryFactory;
+import run.halo.app.extension.router.selector.FieldSelector;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
+
+import static run.halo.app.extension.index.query.QueryFactory.all;
+import static run.halo.app.extension.index.query.QueryFactory.and;
+import static run.halo.app.extension.index.query.QueryFactory.equal;
 
 @Component
 public class FriendPostServiceImpl implements FriendPostService {
 
-    private static final Logger log = LoggerFactory.getLogger(FriendPostController.class);
+    private static final Logger log = LoggerFactory.getLogger(FriendPostServiceImpl.class);
 
-    private final ExtensionClient client;
-
-    private final FriendFinder friendFinder;
-
-    private final BlogStatusService blogStatusService;
+    private final ReactiveExtensionClient client;
 
     private final BlogCrawlerService blogCrawlerService;
 
 
     private final int pageSize = 20;
 
-    public FriendPostServiceImpl(FriendFinder friendFinder , ExtensionClient client,
-        BlogStatusService blogStatusService, BlogCrawlerService blogCrawlerService) {
+    public FriendPostServiceImpl(ReactiveExtensionClient client, BlogCrawlerService blogCrawlerService) {
         this.client = client;
-        this.friendFinder = friendFinder;
-        this.blogStatusService = blogStatusService;
         this.blogCrawlerService = blogCrawlerService;
     }
 
 
-    @Override
-    public void synchronizationFriend() {
-
-        Predicate<Friend> paramPredicate = friend ->
-        {
-            if (friend.getSpec().getSubmittedType()==null) {
-                return true;
-            }else {
-                return  Objects.equals(friend.getSpec().getSubmittedType(),Friend.Spec.SubmittedType.APPROVED) ||
-                    Objects.equals(friend.getSpec().getSubmittedType(),Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID);
-            }
-        };
-
-        ListResult<Friend> listResult = client.list(Friend.class, paramPredicate, null, 1, pageSize);
-        //分页数据
-        //分页获取并处理
-        for (int i = 1; i <= listResult.getTotalPages(); i++) {
-            ListResult<Friend> friendsPage = client.list(Friend.class, paramPredicate, defaultComparator(), i, pageSize);
-            for (Friend friend : friendsPage) {
+    public Mono<Void> synchronizationFriend() {
+        var listOptions = new ListOptions();
+        var query = and(all(), QueryFactory.or(
+            equal("spec.submittedType",Friend.Spec.SubmittedType.APPROVED.name()),
+            equal("spec.submittedType",Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID.name())
+        ));
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(Friend.class, listOptions, defaultSort())
+            .flatMap(friend -> {
                 String rssUrl = friend.getSpec().getRssUrl();
                 String link = friend.getSpec().getLink();
-                String url = rssUrl;
-                if (StringUtils.isNotEmpty(link)){
+                String url;
+                if (StringUtils.isNotEmpty(link)) {
                     url = link;
+                } else {
+                    url = rssUrl;
                 }
-                boolean statusOk = blogStatusService.isStatusOkByName(friend.getMetadata().getName());
-                if (statusOk) {
-                    log.info("start crawling posts, blogDomainName: {}", url);
-                    Optional<CronFriendPost> cronFriendPost =
-                        client.fetch(CronFriendPost.class, "cron-default");
-                    int successfulRetainLimit = 0;
-                    if (cronFriendPost.isPresent()){
-                        successfulRetainLimit = cronFriendPost.get().getSpec().getSuccessfulRetainLimit();
-                        if (successfulRetainLimit==0){
-                            successfulRetainLimit = 10;
+                return isStatusOkByName(friend.getMetadata().getName())
+                    .flatMap(statusOk->{
+                        if (statusOk){
+                            Mono<Integer> integerMono = getSuccessfulRetainLimit();
+                            String finalUrl = url;
+                            return integerMono.flatMap(sum -> {
+                                RSSInfo rssInfo = blogCrawlerService.getRSSInfoByRSSAddress(rssUrl, sum);
+                                return savePosts(rssInfo,friend,finalUrl);
+                            });
+                        }else {
+                            return Mono.just(false);
                         }
-                    }else {
-                        successfulRetainLimit = 10;
-                    }
-                    RSSInfo rssInfo =
-                        blogCrawlerService.getRSSInfoByRSSAddress(rssUrl, successfulRetainLimit);
-
-                    boolean success = savePosts(friend.getSpec().getLink(), rssInfo, friend);
-                    if (!success) {
-                        log.info("no new posts saved, blogDomainName: {}", url);
-                        continue;
-                    }
-                    log.info("posts saved success, blogDomainName: {}", url);
-                }
-            }
-        }
+                    });
+            })
+            .then();
     }
 
-    public boolean savePosts(String blogDomainName, RSSInfo rssInfo,Friend friend) {
-        if (null != rssInfo) {
-            int saveCount = 0;
-            for (FriendPost blogPost : rssInfo.getBlogPosts()) {
-                String link = blogPost.getSpec().getLink();
-                boolean existsByLink = existsByLink(link);
-
-                Instant publishedAt = blogPost.getSpec().getPubDate();
-                boolean isValidNewPost = publishedAt.isBefore(Instant.now());
-
-                if (!existsByLink && isValidNewPost) {
-                    FriendPost friendPost = new FriendPost();
-                    // 设置元数据才能保存
-                    friendPost.setMetadata(new Metadata());
-                    friendPost.getMetadata().setGenerateName("friend-post-");
-                    friendPost.setSpec(blogPost.getSpec());
-                    friendPost.getSpec().setLogo(friend.getSpec().getLogo());
-                    friendPost.setStatus(new FriendPost.Status());
-                    friendPost.getSpec().setFriendName(friend.getMetadata().getName());
-                    Friend.Spec spec = friend.getSpec();
-                    if (StringUtils.isNotEmpty(spec.getDisplayName())){
-                        friendPost.getSpec().setAuthor(spec.getDisplayName());
+    public Mono<Boolean> savePosts(RSSInfo rssInfo, Friend friend, String finalUrl) {
+        if (rssInfo != null) {
+            return Flux.fromIterable(rssInfo.getBlogPosts())
+                .filter(blogPost -> isValidNewPost(blogPost))
+                .flatMap(blogPost -> {
+                var listOptions = new ListOptions();
+                var query = equal("spec.link",blogPost.getSpec().getLink());
+                listOptions.setFieldSelector(FieldSelector.of(query));
+                  return client.listAll(FriendPost.class,listOptions, null).count()
+                    .map(Long::intValue).flatMap(size->{
+                        if (!(size>0)){
+                            FriendPost friendPost = new FriendPost();
+                            // 设置元数据才能保存
+                            friendPost.setMetadata(new Metadata());
+                            friendPost.getMetadata().setGenerateName("friend-post-");
+                            friendPost.setSpec(blogPost.getSpec());
+                            friendPost.getSpec().setLogo(friend.getSpec().getLogo());
+                            friendPost.setStatus(new FriendPost.Status());
+                            friendPost.getSpec().setFriendName(friend.getMetadata().getName());
+                            Friend.Spec spec = friend.getSpec();
+                            if (StringUtils.isNotEmpty(spec.getDisplayName())){
+                                friendPost.getSpec().setAuthor(spec.getDisplayName());
+                            }
+                            String description = friendPost.getSpec().getDescription();
+                            //解析html内容转换成文本
+                            if (StringUtils.isNotEmpty(description)){
+                                description = CommonUtils.parseAndTruncateHtml2Text(description, 800);
+                                String regexp = "[　*|\\s*]*";
+                                description = description.replaceFirst(regexp, "").trim();
+                                friendPost.getSpec().setDescription(description);
+                            }
+                            return client.create(friendPost).thenReturn(true);
+                        }else {
+                            return Mono.just(false);
+                        }
+                      });
+                })
+                .collectList()
+                .flatMap(savedPosts -> {
+                    if (!savedPosts.isEmpty()) {
+                        long count = savedPosts.stream().filter(b -> b.equals(true)).count();
+                        if (count>0){
+                            Friend.Spec spec = friend.getSpec();
+                            if (!StringUtils.isNotEmpty(spec.getLink())){
+                                friend.getSpec().setLink(rssInfo.getBlogAddress());
+                            }
+                            if (!StringUtils.isNotEmpty(spec.getDescription())){
+                                friend.getSpec().setDescription(rssInfo.getBlogDescription());
+                            }
+                            if (!StringUtils.isNotEmpty(spec.getDisplayName())){
+                                friend.getSpec().setDisplayName(rssInfo.getBlogTitle());
+                            }
+                            friend.getSpec().setStatus(1);
+                            if (friend.getStatus()==null){
+                                friend.setStatus(new Friend.Status());
+                            }
+                            friend.getStatus().setStatusType(Friend.Status.StatusType.OK);
+                            friend.getSpec().setPullTime(new Date());
+                            friend.getSpec().setUpdateTime(rssInfo.getBlogPosts().get(0).getSpec().getPubDate());
+                            if (friend.getSpec().getSubmittedType()==null){
+                                friend.getSpec().setSubmittedType(Friend.Spec.SubmittedType.APPROVED);
+                                friend.getSpec().setReason("审核通过");
+                            }
+                            log.info("posts saved success, blogDomainName: {}", finalUrl);
+                            return client.update(friend).thenReturn(true);
+                        }else {
+                            log.info("no new posts saved, blogDomainName: {}", finalUrl);
+                            return Mono.just(false);
+                        }
+                    } else {
+                        log.info("no new posts saved, blogDomainName: {}", finalUrl);
+                        return Mono.just(false);
                     }
-                    String description = friendPost.getSpec().getDescription();
-                    //解析html内容转换成文本
-                    if (StringUtils.isNotEmpty(description)){
-                        description = CommonUtils.parseAndTruncateHtml2Text(description, 800);
-                        String regexp = "[　*|\\s*]*";
-                        description = description.replaceFirst(regexp, "").trim();
-                        friendPost.getSpec().setDescription(description);
-                    }
-                    saveCount = saveCount+1;
-                    client.create(friendPost);
-                }
-            }
-            boolean b = saveCount > 0;
-            if (b){
-                Friend.Spec spec = friend.getSpec();
-                if (!StringUtils.isNotEmpty(spec.getLink())){
-                    friend.getSpec().setLink(rssInfo.getBlogAddress());
-                }
-                if (!StringUtils.isNotEmpty(spec.getDescription())){
-                    friend.getSpec().setDescription(rssInfo.getBlogDescription());
-                }
-                if (!StringUtils.isNotEmpty(spec.getDisplayName())){
-                    friend.getSpec().setDisplayName(rssInfo.getBlogTitle());
-                }
-                friend.getSpec().setStatus(1);
-                if (friend.getStatus()==null){
-                    friend.setStatus(new Friend.Status());
-                }
-                friend.getStatus().setStatusType(Friend.Status.StatusType.OK);
-                friend.getSpec().setPullTime(new Date());
-                friend.getSpec().setUpdateTime(rssInfo.getBlogPosts().get(0).getSpec().getPubDate());
-                if (friend.getSpec().getSubmittedType()==null){
-                    friend.getSpec().setSubmittedType(Friend.Spec.SubmittedType.APPROVED);
-                    friend.getSpec().setReason("审核通过");
-                }
-                client.update(friend);
-            }
-            return b;
-        }else {
-            if (friend.getSpec().getStatus()==null){
+                });
+        } else {
+            if (friend.getSpec().getStatus() == null) {
                 friend.getSpec().setPullTime(new Date());
                 friend.getSpec().setStatus(2);
-                client.update(friend);
-            }else {
-                if (friend.getSpec().getStatus()!=2){
+                return client.update(friend).thenReturn(false);
+            } else {
+                if (friend.getSpec().getStatus() != 2) {
                     friend.getSpec().setPullTime(new Date());
                     friend.getSpec().setStatus(2);
-                    client.update(friend);
+                    return client.update(friend).thenReturn(false);
                 }
             }
-            return false;
+            log.info("no new posts saved, blogDomainName: {}", finalUrl);
+            return Mono.just(false);
         }
-
-    }
-
-    public boolean existsByLink(String link) {
-        int size = client.list(FriendPost.class,
-            post -> StringUtils.equals(post.getSpec().getLink(), link), null).size();
-        return size>0;
     }
 
 
-    private Comparator<Friend> defaultComparator() {
-        Function<Friend, Instant> pubDate =
-            friendPost -> friendPost.getMetadata().getCreationTimestamp();
-        Function<Friend, String> name = post -> post.getMetadata().getName();
-        return Comparator.comparing(pubDate, Comparators.nullsLow())
-            .thenComparing(name);
+    private boolean isValidNewPost(FriendPost blogPost) {
+        Instant publishedAt = blogPost.getSpec().getPubDate();
+        return publishedAt.isBefore(Instant.now());
+    }
+
+
+    public Mono<Integer> getSuccessfulRetainLimit(){
+        return client.fetch(CronFriendPost.class, "cron-default")
+            .flatMap(cronFriendPost -> {
+                int successfulRetainLimit =
+                    cronFriendPost.getSpec().getSuccessfulRetainLimit();
+                if (successfulRetainLimit == 0) {
+                    successfulRetainLimit = 5;
+                }
+                return Mono.just(successfulRetainLimit);
+            }).defaultIfEmpty(5);
+    }
+
+
+    public Mono<Boolean> isStatusOkByName(String name) {
+        return client.fetch(Friend.class, name).flatMap(friend -> {
+            boolean b = true;
+            if (friend.getStatus() == null){
+                b = true;
+            }else {
+                Friend.Status.StatusType statusType = friend.getStatus().getStatusType();
+                if (statusType ==null){
+                    b =  true;
+                }else {
+                    b =   statusType.equals(Friend.Status.StatusType.OK);
+                }
+            }
+            return Mono.just(b);
+        }).defaultIfEmpty(true);
+    }
+    static Sort defaultSort() {
+        return Sort.by("metadata.creationTimestamp").descending();
     }
 }

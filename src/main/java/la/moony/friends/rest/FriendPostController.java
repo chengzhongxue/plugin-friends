@@ -4,10 +4,8 @@ import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
 import la.moony.friends.finders.FriendFinder;
 import la.moony.friends.service.FriendPostService;
-import la.moony.friends.service.FriendService;
 import la.moony.friends.vo.FriendPostVo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,10 +13,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.router.selector.FieldSelector;
 import run.halo.app.plugin.ApiVersion;
+
+import static run.halo.app.extension.index.query.QueryFactory.equal;
 
 /**
  * RSS订阅文章接口
@@ -48,8 +51,8 @@ public class FriendPostController {
     }
 
     @PostMapping("/synchronizationFriend")
-    public void synchronizationFriend() {
-        friendPostService.synchronizationFriend();
+    public Mono<Void> synchronizationFriend() {
+        return friendPostService.synchronizationFriend().then();
     }
 
 
@@ -60,11 +63,13 @@ public class FriendPostController {
      * @return
      */
     @DeleteMapping("/delByLink/{name}")
-    public Mono<Void> synchronizationFriend(@PathVariable("name") String name) {
+    public Mono<Void> delByLink(@PathVariable("name") String name) {
+
         return client.get(Friend.class, name)
-            .flatMap(friend -> client.list(FriendPost.class,
-                    friendPost -> StringUtils.equals(friendPost.getSpec().getUrl(),
-                        friend.getSpec().getLink()), null)
+            .flatMap(friend -> client.listAll(FriendPost.class,
+                new ListOptions().setFieldSelector(
+                    FieldSelector.of(equal("spec.url",friend.getSpec().getLink()))
+                ), null)
                 .flatMap(friendPost -> client.delete(friendPost))
             .then());
     }

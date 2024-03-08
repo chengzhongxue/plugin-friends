@@ -1,4 +1,4 @@
-package la.moony.friends.rest;
+package la.moony.friends.reconciler;
 
 import java.time.Clock;
 import java.time.Duration;

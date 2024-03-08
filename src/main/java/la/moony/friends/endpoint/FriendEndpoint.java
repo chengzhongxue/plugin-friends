@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.endpoint.CustomEndpoint;
 import run.halo.app.extension.GroupVersion;
@@ -58,11 +59,13 @@ public class FriendEndpoint implements CustomEndpoint {
     }
 
     private Mono<ListResult<Friend>> listFriend(FriendQuery query) {
-        return client.list(Friend.class, query.toPredicate(),
-            query.toComparator(),
-            query.getPage(),
-            query.getSize()
-        );
+        return client.listBy(Friend.class, query.toListOptions(), query.toPageRequest())
+            .flatMap(listResult -> Flux.fromStream(listResult.get())
+                .collectList()
+                .map(list -> new ListResult<>(listResult.getPage(), listResult.getSize(),
+                    listResult.getTotal(), list)
+                )
+            );
     }
 
     Mono<ServerResponse> listFriendPost(ServerRequest request) {
@@ -77,11 +80,13 @@ public class FriendEndpoint implements CustomEndpoint {
     }
 
     private Mono<ListResult<FriendPost>> listFriendPost(FriendPostQuery query) {
-        return client.list(FriendPost.class, query.toPredicate(),
-            query.toComparator(),
-            query.getPage(),
-            query.getSize()
-        );
+        return client.listBy(FriendPost.class, query.toListOptions(), query.toPageRequest())
+            .flatMap(listResult -> Flux.fromStream(listResult.get())
+                .collectList()
+                .map(list -> new ListResult<>(listResult.getPage(), listResult.getSize(),
+                    listResult.getTotal(), list)
+                )
+            );
     }
 
 

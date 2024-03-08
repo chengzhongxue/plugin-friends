@@ -1,12 +1,8 @@
 package la.moony.friends.finders.impl;
 
 import jakarta.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.function.Function;
 import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
 import la.moony.friends.finders.FriendFinder;
@@ -17,98 +13,111 @@ import la.moony.friends.vo.StatisticalVo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.Nullable;
-import org.springframework.util.comparator.Comparators;
+import org.springframework.data.domain.Sort;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
+import run.halo.app.extension.PageRequest;
+import run.halo.app.extension.PageRequestImpl;
 import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.index.query.QueryFactory;
+import run.halo.app.extension.router.selector.FieldSelector;
 import run.halo.app.theme.finders.Finder;
 
+import static run.halo.app.extension.index.query.QueryFactory.all;
+import static run.halo.app.extension.index.query.QueryFactory.and;
+import static run.halo.app.extension.index.query.QueryFactory.equal;
 
-/**
- * A default implementation for {@link FriendFinder}.
- *
- * @author LIlGG
- * @since 1.0.0
- */
+
 @Finder("friendFinder")
 @RequiredArgsConstructor
 public class FriendFinderImpl implements FriendFinder {
-
-    public static final Predicate<Friend> FRIEND_PREDICATE = friend ->
-    {
-        if (friend.getSpec().getSubmittedType()==null) {
-            return true;
-        }else {
-            return  Objects.equals(friend.getSpec().getSubmittedType(),Friend.Spec.SubmittedType.APPROVED) ||
-                Objects.equals(friend.getSpec().getSubmittedType(),Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID);
-        }
-    };
 
     private final ReactiveExtensionClient client;
 
 
 
-    Flux<FriendPost> friendPostList(@Nullable Predicate<FriendPost> predicate) {
-        return client.list(FriendPost.class, predicate, defaultFriendPostComparator());
-    }
-
-
-    Flux<Friend> friendList(@Nullable Predicate<Friend> predicate) {
-        return client.list(Friend.class, predicate, defaultFriendComparator());
-    }
-
     @Override
     public Flux<FriendPostVo> listAll() {
-        return friendPostList(null).map(FriendPostVo::from);
+        var listOptions = new ListOptions();
+        var query = all();
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(FriendPost.class, listOptions, defaultFriendPostSort())
+            .flatMap(this::getFriendPostVo);
     }
 
     @Override
     public Flux<FriendVo> friendListAll() {
-        return friendList(FRIEND_PREDICATE).map(FriendVo::from);
+        var listOptions = new ListOptions();
+        var query = and(all(), QueryFactory.or(
+            QueryFactory.equal("spec.submittedType",Friend.Spec.SubmittedType.APPROVED.name()),
+            QueryFactory.equal("spec.submittedType",Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID.name())
+        ));
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(Friend.class, listOptions, defaultFriendSort())
+            .flatMap(this::getFriendVo);
     }
 
 
     @Override
     public Mono<ListResult<FriendPostVo>> list(Integer page, Integer size) {
-        return pageFriendPost(page, size,null, defaultFriendPostComparator());
+        var pageRequest = PageRequestImpl.of(pageNullSafe(page), sizeNullSafe(size), defaultFriendPostSort());
+        return pageFriendPost(null, pageRequest);
     }
 
     @Override
     public Mono<ListResult<FriendPostVo>> list(Integer page, Integer size,String keyword) {
-        return pageFriendPost(page, size,
-            postToPredicate(keyword),
-            defaultFriendPostComparator()
-        );
+        var query = all();
+        if (StringUtils.isNotEmpty(keyword)){
+            query = and(query, QueryFactory.or(
+                QueryFactory.contains("spec.author", keyword),
+                QueryFactory.contains("spec.title", keyword),
+                QueryFactory.contains("spec.description", keyword)
+            ));
+        }
+
+        var pageRequest = PageRequestImpl.of(pageNullSafe(page), sizeNullSafe(size), defaultFriendPostSort());
+        return pageFriendPost(FieldSelector.of(query), pageRequest);
     }
 
 
     @Override
     public Mono<ListResult<FriendVo>> friendList(Integer page, Integer size) {
-        return pageFriend(page, size,null, defaultFriendComparator());
+        var pageRequest = PageRequestImpl.of(pageNullSafe(page), sizeNullSafe(size), defaultFriendSort());
+        return pageFriend(null,pageRequest);
     }
 
     @Override
     public Mono<ListResult<FriendPostVo>> listByUrl(Integer page, Integer size,String url) {
-        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getUrl(), url), defaultFriendPostComparator());
+        var query = equal("spec.url", url);
+        var pageRequest = PageRequestImpl.of(pageNullSafe(page), sizeNullSafe(size), defaultFriendPostSort());
+        return pageFriendPost(FieldSelector.of(query), pageRequest);
     }
 
     @Override
     public Flux<FriendPostVo> listByUrl(String url) {
-        return friendPostList(post -> StringUtils.equals(post.getSpec().getUrl(), url))
-            .map(FriendPostVo::from);
+        var listOptions = new ListOptions();
+        var query = equal("spec.url", url);
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(FriendPost.class, listOptions, defaultFriendPostSort())
+            .flatMap(this::getFriendPostVo);
     }
 
     @Override
     public Flux<FriendPostVo> listByAuthor(String author) {
-        return friendPostList(post -> StringUtils.equals(post.getSpec().getAuthor(), author))
-            .map(FriendPostVo::from);
+        var listOptions = new ListOptions();
+        var query = equal("spec.author", author);
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(FriendPost.class, listOptions, defaultFriendPostSort())
+            .flatMap(this::getFriendPostVo);
     }
 
     @Override
     public Mono<ListResult<FriendPostVo>> listByAuthor(Integer page, Integer size,String author) {
-        return pageFriendPost(page, size,post -> StringUtils.equals(post.getSpec().getAuthor(), author), defaultFriendPostComparator());
+        var query = equal("spec.author", author);
+        var pageRequest = PageRequestImpl.of(pageNullSafe(page), sizeNullSafe(size), defaultFriendPostSort());
+        return pageFriendPost(FieldSelector.of(query), pageRequest);
     }
 
     @Override
@@ -128,66 +137,46 @@ public class FriendFinderImpl implements FriendFinder {
     @Override
     public Mono<ListResult<FriendVo>> friendList(int pageNum, Integer pageSize, String sort,
         String keyword) {
-        return pageFriend(pageNum, pageSize,
-            blogToPredicate(keyword),
-            defaultBlogComparator(sort)
-        );
+        var pageRequest = PageRequestImpl.of(pageNullSafe(pageNum), sizeNullSafe(pageSize), defaultBlogSort(sort));
+        return pageFriend(blogToPredicate(keyword), pageRequest);
     }
 
     @Override
     public Mono<ListResult<BlogVo>> blogList(int pageNum, Integer pageSize, String sort,
         String keyword) {
-        return pageBlog(pageNum, pageSize,
-            blogToPredicate(keyword),
-            defaultBlogComparator(sort)
-        );
+        var pageRequest = PageRequestImpl.of(pageNullSafe(pageNum), sizeNullSafe(pageSize), defaultBlogSort(sort));
+        return pageBlog(blogToPredicate(keyword), pageRequest);
     }
 
     @Override
     public Mono<ListResult<FriendVo>> blogRequestList(Integer page, Integer size) {
-        return pageFriend(page, size,friend -> friend.getSpec().getSelfSubmitted(),
-            defaultFriendComparator());
+        var query = equal("spec.selfSubmitted", "true");
+        var pageRequest = PageRequestImpl.of(pageNullSafe(page), sizeNullSafe(size), defaultFriendSort());
+        return pageFriend(FieldSelector.of(query), pageRequest);
     }
 
-    public Predicate<Friend> blogToPredicate(String keyword) {
-        Predicate<Friend> keywordPredicate = friend -> {
-            if (StringUtils.isBlank(keyword)) {
-                return true;
-            }
-            String keywordToSearch = keyword.trim().toLowerCase();
-            return StringUtils.containsAnyIgnoreCase(friend.getSpec().getDisplayName(),
-                keywordToSearch)
-                || StringUtils.containsAnyIgnoreCase(friend.getSpec().getRssUrl(), keywordToSearch)
-                || StringUtils.containsAnyIgnoreCase(friend.getSpec().getLink(), keywordToSearch);
-        };
-        Predicate<Friend> groupPredicate = friend -> {
-            if (friend.getSpec().getStatus()!=null){
-                return friend.getSpec().getStatus().equals(1);
-            }
-            return false;
-        };
-        return groupPredicate.and(keywordPredicate).and(FRIEND_PREDICATE);
-    }
+    public FieldSelector blogToPredicate(String keyword) {
+        var query = and(equal("spec.status","1"), QueryFactory.or(
+            QueryFactory.equal("spec.submittedType",Friend.Spec.SubmittedType.APPROVED.name()),
+            QueryFactory.equal("spec.submittedType",Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID.name())
+        ));
+        if (StringUtils.isNotBlank(keyword)) {
+            query = and(query, QueryFactory.or(
+                QueryFactory.contains("spec.displayName", keyword),
+                QueryFactory.contains("spec.description", keyword),
+                QueryFactory.contains("spec.rssUrl", keyword),
+                QueryFactory.contains("spec.link", keyword)
+            ));
+        }
 
-    public Predicate<FriendPost> postToPredicate(String keyword) {
-        Predicate<FriendPost> keywordPredicate = post -> {
-            if (StringUtils.isBlank(keyword)) {
-                return true;
-            }
-            String keywordToSearch = keyword.trim().toLowerCase();
-            return StringUtils.containsAnyIgnoreCase(post.getSpec().getTitle(),
-                keywordToSearch)
-                || StringUtils.containsAnyIgnoreCase(post.getSpec().getDescription(), keywordToSearch)
-                || StringUtils.containsAnyIgnoreCase(post.getSpec().getAuthor(), keywordToSearch);
-        };
-        Predicate<FriendPost> groupPredicate = friend -> {return true;};
-        return groupPredicate.and(keywordPredicate);
+        return FieldSelector.of(query);
     }
 
     @Override
     public Mono<FriendPostVo> get(String friendPostName) {
+        Predicate<FriendPost> predicate = friend -> true;
         return client.get(FriendPost.class, friendPostName)
-            .filter(null)
+            .filter(predicate)
             .flatMap(this::getFriendPostVo);
     }
 
@@ -199,26 +188,35 @@ public class FriendFinderImpl implements FriendFinder {
             .flatMap(this::getFriendVo);
     }
 
-    private Mono<ListResult<FriendPostVo>> pageFriendPost(Integer page, Integer size,
-        @Nullable Predicate<FriendPost> predicate,
-        Comparator<FriendPost> comparator) {
-        return client.list(FriendPost.class, predicate, comparator,
-                pageNullSafe(page), sizeNullSafe(size))
+    private Mono<ListResult<FriendPostVo>> pageFriendPost(FieldSelector fieldSelector, PageRequest page){
+        var listOptions = new ListOptions();
+        var query = all();
+        if (fieldSelector != null && fieldSelector.query() != null) {
+            query = and(query, fieldSelector.query());
+        }
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listBy(FriendPost.class, listOptions, page)
             .flatMap(list -> Flux.fromStream(list.get())
                 .concatMap(this::getFriendPostVo)
                 .collectList()
-                .map(postVos -> new ListResult<>(list.getPage(), list.getSize(),
-                    list.getTotal(), postVos)
+                .map(friendPostVos -> new ListResult<>(list.getPage(), list.getSize(),
+                    list.getTotal(), friendPostVos)
                 )
             )
-            .defaultIfEmpty(new ListResult<>(page, size, 0L, List.of()));
+            .defaultIfEmpty(
+                new ListResult<>(page.getPageNumber(), page.getPageSize(), 0L, List.of()));
+
     }
 
-    private Mono<ListResult<FriendVo>> pageFriend(Integer page, Integer size,
-        @Nullable Predicate<Friend> predicate,
-        Comparator<Friend> comparator) {
-        return client.list(Friend.class, predicate, comparator,
-                pageNullSafe(page), sizeNullSafe(size))
+
+    private Mono<ListResult<FriendVo>> pageFriend(FieldSelector fieldSelector, PageRequest page){
+        var listOptions = new ListOptions();
+        var query = all();
+        if (fieldSelector != null && fieldSelector.query() != null) {
+            query = and(query, fieldSelector.query());
+        }
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listBy(Friend.class, listOptions, page)
             .flatMap(list -> Flux.fromStream(list.get())
                 .concatMap(this::getFriendVo)
                 .collectList()
@@ -226,15 +224,22 @@ public class FriendFinderImpl implements FriendFinder {
                     list.getTotal(), friendVos)
                 )
             )
-            .defaultIfEmpty(new ListResult<>(page, size, 0L, List.of()));
+            .defaultIfEmpty(
+                new ListResult<>(page.getPageNumber(), page.getPageSize(), 0L, List.of()));
+
     }
 
-    private Mono<ListResult<BlogVo>> pageBlog(Integer page, Integer size,
-        @Nullable Predicate<Friend> predicate,
-        Comparator<Friend> comparator) {
-        Flux<FriendPost> friendPostFlux = friendPostList(null);
-        return client.list(Friend.class, predicate, comparator,
-                pageNullSafe(page), sizeNullSafe(size))
+    private Mono<ListResult<BlogVo>> pageBlog(FieldSelector fieldSelector, PageRequest page) {
+        var listOptionsFriendPost = new ListOptions();
+        listOptionsFriendPost.setFieldSelector(FieldSelector.of(all()));
+        Flux<FriendPost> friendPostFlux = client.listAll(FriendPost.class, listOptionsFriendPost, defaultFriendPostSort());
+        var listOptions = new ListOptions();
+        var query = all();
+        if (fieldSelector != null && fieldSelector.query() != null) {
+            query = and(query, fieldSelector.query());
+        }
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listBy(Friend.class, listOptions, page)
             .flatMap(list -> Flux.fromStream(list.get()).map(BlogVo::from)
                 .concatMap(friend -> friendPostFlux
                     .filter(friendPost -> StringUtils.equals(friendPost.getSpec().getFriendName(),
@@ -248,43 +253,26 @@ public class FriendFinderImpl implements FriendFinder {
                     list.getTotal(), friendVos)
                 )
             )
-            .defaultIfEmpty(new ListResult<>(page, size, 0L, List.of()));
+            .defaultIfEmpty(new ListResult<>(page.getPageNumber(), page.getPageSize(), 0L, List.of()));
     }
-
-    static Comparator<Friend> defaultBlogComparator(String sort) {
-        Function<Friend, Instant> function = friend -> friend.getSpec().getUpdateTime();
+    
+    static Sort defaultBlogSort(String sort) {
+        var sorts = Sort.by("spec.updateTime");
         if (StringUtils.isNotEmpty(sort)){
             if (sort.equals("collect_time")){
-                function = friend -> friend.getMetadata().getCreationTimestamp();
+                sorts = Sort.by("metadata.creationTimestamp");
             }
         }
-        Function<Friend, String> name = friend -> friend.getMetadata()
-            .getName();
-        return Comparator.comparing(function, Comparators.nullsLow())
-            .thenComparing(name)
-            .reversed();
+        return sorts.descending();
     }
 
-    static Comparator<FriendPost> defaultFriendPostComparator() {
-        Function<FriendPost, Instant> function = friend -> friend.getSpec().getPubDate();
-        Function<FriendPost, String> name = friendPost -> friendPost.getMetadata()
-            .getName();
-        return Comparator.comparing(function, Comparators.nullsLow())
-            .thenComparing(name)
-            .reversed();
+    static Sort defaultFriendPostSort() {
+        return Sort.by("spec.pubDate").descending();
     }
 
-    static Comparator<Friend> defaultFriendComparator() {
-        Function<Friend, Instant> createTime = friend -> friend.getMetadata()
-            .getCreationTimestamp();
-        Function<Friend, String> name = friend -> friend.getMetadata()
-            .getName();
-        return Comparator.comparing(createTime, Comparators.nullsLow())
-            .thenComparing(name)
-            .reversed();
+    static Sort defaultFriendSort() {
+        return Sort.by("metadata.creationTimestamp").descending();
     }
-
-
 
     private Mono<FriendPostVo> getFriendPostVo(@Nonnull FriendPost friendPost) {
         FriendPostVo friendPostVo = FriendPostVo.from(friendPost);
@@ -306,32 +294,39 @@ public class FriendFinderImpl implements FriendFinder {
 
 
     public Mono<Integer> friendCount() {
-        return client.list(Friend.class, FRIEND_PREDICATE, null)
+        var listOptions = new ListOptions();
+        var query = and(all(), QueryFactory.or(
+            QueryFactory.equal("spec.submittedType",Friend.Spec.SubmittedType.APPROVED.name()),
+            QueryFactory.equal("spec.submittedType",Friend.Spec.SubmittedType.SYSTEM_CHECK_VALID.name())
+        ));
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(Friend.class, listOptions, defaultFriendSort())
             .count()
             .map(Long::intValue);
     }
 
     public Mono<Integer> isFriend(String rssUrl) {
-        return client.list(Friend.class,friend -> StringUtils.equals(friend.getSpec().getRssUrl(),rssUrl), null)
+        var listOptions = new ListOptions();
+        var query = equal("spec.rssUrl", rssUrl);
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(Friend.class, listOptions, defaultFriendSort())
             .count()
             .map(Long::intValue);
     }
 
     public Mono<Integer> friendSucceedCount() {
-        return client.list(Friend.class, FRIEND_PREDICATE.and(friend -> {
-                    if (friend.getSpec().getStatus()!=null){
-                        if (friend.getSpec().getStatus() == 1){
-                            return true;
-                        }
-                    }
-                    return false;
-                }), null)
+        var listOptions = new ListOptions();
+        var query = equal("spec.status", "1");
+        listOptions.setFieldSelector(FieldSelector.of(query));
+        return client.listAll(Friend.class, listOptions, defaultFriendSort())
             .count()
             .map(Long::intValue);
     }
 
     public Mono<Integer> friendPostCount() {
-        return client.list(FriendPost.class, null, null)
+        var listOptions = new ListOptions();
+        listOptions.setFieldSelector(FieldSelector.of(all()));
+        return client.listAll(FriendPost.class, listOptions, defaultFriendSort())
             .count()
             .map(Long::intValue);
     }

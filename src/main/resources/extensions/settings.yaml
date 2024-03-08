@@ -12,6 +12,15 @@ spec:
           name: title
           validation: required
           value: '友链朋友圈'
+        - $formkit: code
+          name: menu_html
+          label: 菜单
+          height: 200px
+          language: html
+          value: <li> <a href="/friends" title="首页"> <span>首页</span> </a> </li>
+                <li> <a href="/blogs" title="博客广场"> <span>博客广场</span> </a> </li>
+                <li> <a href="/blog-requests/add" title="提交博客"> <span>提交博客</span> </a> </li>
+                <li> <a href="/blog-requests" title="审核结果"> <span>审核结果</span> </a> </li>
         - $formkit: text
           label: 朋友圈列表显示条数
           name: pageSize

@@ -198,11 +198,11 @@ function onKeywordChange() {
                       },
                       {
                         label: '较近创建',
-                        value: 'pubDate,desc',
+                        value: 'spec.pubDate,desc',
                       },
                       {
                         label: '较早创建',
-                        value: 'pubDate,asc',
+                        value: 'spec.pubDate,asc',
                       },
                     ]"
               />

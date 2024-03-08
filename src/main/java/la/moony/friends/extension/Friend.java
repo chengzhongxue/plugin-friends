@@ -20,6 +20,8 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
     version = "v1alpha1", singular = "friend", plural = "friends")
 public class Friend extends AbstractExtension  {
 
+    public static final String REQUIRE_SYNC_ON_STARTUP_INDEX_NAME = "requireSyncOnStartup";
+
 
     private Spec spec;
 
@@ -81,6 +83,8 @@ public class Friend extends AbstractExtension  {
     )
     @Data
     public static class Status {
+
+        private long observedVersion;
 
         @Schema(defaultValue = "OK")
         private StatusType statusType;

@@ -1,7 +1,6 @@
 package la.moony.friends.service.impl;
 
 import la.moony.friends.extension.Friend;
-import la.moony.friends.rest.FriendPostController;
 import la.moony.friends.service.BlogStatusService;
 import la.moony.friends.util.OkHttpUtil;
 import okhttp3.Call;
@@ -19,11 +18,10 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class BlogStatusServiceImpl implements BlogStatusService {
-    private static final Logger log = LoggerFactory.getLogger(FriendPostController.class);
+    private static final Logger log = LoggerFactory.getLogger(BlogStatusServiceImpl.class);
 
     private final ExtensionClient client;
 
@@ -33,26 +31,6 @@ public class BlogStatusServiceImpl implements BlogStatusService {
         this.client = client;
     }
 
-    @Override
-    public boolean isStatusOkByName(String name) {
-        Optional<Friend> fetch = client.fetch(Friend.class, name);
-        if (fetch.isPresent()) {
-            if (fetch.get().getStatus() == null){
-                return true;
-            }else {
-                Friend.Status.StatusType statusType = fetch.get().getStatus().getStatusType();
-                if (statusType ==null){
-                    return true;
-                }else {
-                    return  statusType.equals(Friend.Status.StatusType.OK);
-                }
-            }
-
-        }else {
-            return true;
-
-        }
-    }
 
     @Override
     public void detectBlogStatus() {

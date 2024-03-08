@@ -59,26 +59,34 @@ public class FriendRouter {
     private Mono<ServerResponse> handlerFunction(ServerRequest request) {
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "friends")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
-                java.util.Map.of("friends", friendPostList(request),"title",getFriendTitle(),"statistical",getStatistical())));
+                java.util.Map.of("friends", friendPostList(request),
+                    "title",getFriendTitle(),
+                    "statistical",getStatistical(),
+                    "friend_menu",getMenu())));
     }
 
     private Mono<ServerResponse> handlerBlogsDefault(ServerRequest request) {
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "blogs")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
-                java.util.Map.of("blogs",blogList(request),"statistical",getStatistical(),"title",getFriendTitle())));
+                java.util.Map.of("blogs",blogList(request),
+                    "statistical",getStatistical(),
+                    "title",getFriendTitle(),
+                    "friend_menu",getMenu())));
     }
 
     private Mono<ServerResponse> handlerBlogDefault(ServerRequest request) {
         String friendName = request.pathVariable("name");
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "blog")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
-                java.util.Map.of("friend",friendFinder.friendGet(friendName),"title",getFriendTitle())));
+                java.util.Map.of("friend",friendFinder.friendGet(friendName),
+                    "title",getFriendTitle(),
+                    "friend_menu",getMenu())));
     }
 
     private Mono<ServerResponse> handlerBlogRequestsAddDefault(ServerRequest request) {
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "blogs-add")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
-                java.util.Map.of("title",getFriendTitle())));
+                java.util.Map.of("title",getFriendTitle(),"friend_menu",getMenu())));
     }
 
     private Mono<ServerResponse> handlerBlogRequestsDetailDefault(ServerRequest request) {
@@ -86,13 +94,16 @@ public class FriendRouter {
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "blog-requests-detail")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
                 java.util.Map.of("title",getFriendTitle(),
-                    "blogRequestDetail",friendFinder.friendGet(friendName))));
+                    "blogRequestDetail",friendFinder.friendGet(friendName),
+                    "friend_menu",getMenu())));
     }
 
     private Mono<ServerResponse> handlerBlogRequestsDefault(ServerRequest request) {
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "blog-requests")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
-                java.util.Map.of("title",getFriendTitle(),"blogRequests",blogRequestList(request))));
+                java.util.Map.of("title",getFriendTitle(),
+                    "blogRequests",blogRequestList(request),
+                    "friend_menu",getMenu())));
     }
 
 
@@ -104,6 +115,15 @@ public class FriendRouter {
         return this.settingFetcher.get("base").map(
             setting -> setting.get("title").asText("友链朋友圈")).defaultIfEmpty(
             "友链朋友圈");
+    }
+
+    Mono<String> getMenu() {
+        return this.settingFetcher.get("base").map(
+            setting -> setting.get("menu_html").asText("<li><a href=\"/friends\" "
+                + "title=\"首页\"><span>首页</span></a></li><li><a href=\"/blogs\" "
+                + "title=\"博客广场\"><span>博客广场</span></a></li><li><a href=\"/blog-requests/add\" "
+                + "title=\"提交博客\"><span>提交博客</span></a></li><li><a href=\"/blog-requests\" "
+                + "title=\"审核结果\"><span>审核结果</span></a></li>"));
     }
 
     private Mono<UrlContextListResult<FriendVo>> blogRequestList(ServerRequest request) {

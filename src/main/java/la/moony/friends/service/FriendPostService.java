@@ -1,7 +1,9 @@
 package la.moony.friends.service;
 
+import reactor.core.publisher.Mono;
+
 public interface FriendPostService {
 
-    void synchronizationFriend();
+    Mono<Void> synchronizationFriend();
 
 }

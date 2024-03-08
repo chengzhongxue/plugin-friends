@@ -1,6 +1,6 @@
 import { definePlugin } from "@halo-dev/console-shared";
 import Friend from "./views/Friend.vue";
-import { IconLink } from "@halo-dev/components";
+import RiBloggerLine from '~icons/ri/blogger-line';
 import { markRaw } from "vue";
 
 export default definePlugin({
@@ -20,7 +20,7 @@ export default definePlugin({
           menu: {
             name: "朋友圈",
             group: "content",
-            icon: markRaw(IconLink),
+            icon: markRaw(RiBloggerLine),
             priority: 21,
           },
         },

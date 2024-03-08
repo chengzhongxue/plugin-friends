@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import la.moony.friends.extension.FriendPost;
-import la.moony.friends.rest.FriendPostController;
 import la.moony.friends.service.BlogCrawlerService;
 import la.moony.friends.util.OkHttpUtil;
 import la.moony.friends.vo.RSSInfo;
@@ -30,7 +29,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 @Component
 public class BlogCrawlerServiceImpl implements BlogCrawlerService {
 
-    private static final Logger log = LoggerFactory.getLogger(FriendPostController.class);
+    private static final Logger log = LoggerFactory.getLogger(BlogCrawlerServiceImpl.class);
 
     private static final OkHttpClient client = OkHttpUtil.getUnsafeOkHttpClient();
 

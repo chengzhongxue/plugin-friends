@@ -412,19 +412,19 @@ function onKeywordChange() {
                     },
                     {
                       label: '较近更新',
-                      value: 'updateTime,desc',
+                      value: 'spec.updateTime,desc',
                     },
                     {
                       label: '较早更新',
-                      value: 'updateTime,asc',
+                      value: 'spec.updateTime,asc',
                     },
                     {
                       label: '较近创建',
-                      value: 'creationTimestamp,desc',
+                      value: 'metadata.creationTimestamp,desc',
                     },
                     {
                       label: '较早创建',
-                      value: 'creationTimestamp,asc',
+                      value: 'metadata.creationTimestamp,asc',
                     },
                   ]"
               />
