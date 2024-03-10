@@ -72,7 +72,7 @@ spec:
             <li> <a href="/blog-requests" title="审核结果"> <span>审核结果</span> </a> </li>
         - $formkit: code
           name: footer_html
-          label: 菜单
+          label: 底部信息
           height: 200px
           language: html
           value: <div class="footer-contact">
