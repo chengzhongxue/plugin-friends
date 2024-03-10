@@ -57,6 +57,8 @@ public interface FriendFinder {
 
     Mono<ListResult<FriendPostVo>> listByAuthor(Integer page, Integer size,String author);
 
+    Mono<ListResult<FriendPostVo>> listByFriendName(Integer page, Integer size,String friendName);
+
     Mono<StatisticalVo> statistical();
     /**
      * rss判断是否存在

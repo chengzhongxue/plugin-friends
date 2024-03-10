@@ -99,7 +99,7 @@ public class CronCronFriendPostReconciler  implements Reconciler<Reconciler.Requ
 
                                 this.friendService.processNewRequest();
 
-                                this.friendPostService.synchronizationFriend();
+                                this.friendPostService.synchronizationFriend().subscribe();
 
                                 ZonedDateTime zonedNow = now.atZone(zoneId);
                                 ZonedDateTime scheduleTimestamp = now.atZone(zoneId);

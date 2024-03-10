@@ -9,7 +9,7 @@
     <div
             th:replace="~{plugin:plugin-friends:modules/footer/blog_summary::blog_summary}">
     </div>
-    <div th:replace="~{plugin:plugin-friends:modules/footer/contact::contact}"></div>
+    <th:block th:utext="${footer_html}"></th:block>
 </footer>
 <div th:insert="~{plugin:plugin-friends:modules/plugin/go_to_top::go_to_top}"></div>
 <script th:src="@{/plugins/plugin-friends/assets/static/js/highlight-menu.js}" type="text/javascript"></script>

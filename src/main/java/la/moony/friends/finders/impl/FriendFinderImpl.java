@@ -121,6 +121,13 @@ public class FriendFinderImpl implements FriendFinder {
     }
 
     @Override
+    public Mono<ListResult<FriendPostVo>> listByFriendName(Integer page, Integer size,String friendName) {
+        var query = equal("spec.friendName", friendName);
+        var pageRequest = PageRequestImpl.of(pageNullSafe(page), sizeNullSafe(size), defaultFriendPostSort());
+        return pageFriendPost(FieldSelector.of(query), pageRequest);
+    }
+
+    @Override
     public Mono<StatisticalVo> statistical() {
         return Mono.just(StatisticalVo.empty()).flatMap(statisticalVo -> friendCount()
             .doOnNext(statisticalVo::setFriendsNum)

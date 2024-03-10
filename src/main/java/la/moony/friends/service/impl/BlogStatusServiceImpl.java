@@ -11,13 +11,18 @@ import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import run.halo.app.extension.ExtensionClient;
+import run.halo.app.extension.ListOptions;
+import run.halo.app.extension.router.selector.FieldSelector;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Instant;
 import java.util.List;
+
+import static run.halo.app.extension.index.query.QueryFactory.all;
 
 @Component
 public class BlogStatusServiceImpl implements BlogStatusService {
@@ -34,7 +39,8 @@ public class BlogStatusServiceImpl implements BlogStatusService {
 
     @Override
     public void detectBlogStatus() {
-        List<Friend> friends = client.list(Friend.class, null, null);
+        List<Friend> friends = client.listAll(Friend.class, new ListOptions().setFieldSelector(
+            FieldSelector.of(all())), Sort.by("metadata.creationTimestamp").descending());
         friends.forEach(friend -> {
             int code = HttpStatus.OK.value();
             Friend.Status.StatusType currentStatus = Friend.Status.StatusType.OK;

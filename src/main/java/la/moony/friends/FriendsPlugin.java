@@ -114,6 +114,11 @@ public class FriendsPlugin extends BasePlugin {
                 .setName("spec.url")
                 .setIndexFunc(
                     simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getUrl())));
+            indexSpecs.add(new IndexSpec()
+                .setName("spec.friendName")
+                .setIndexFunc(
+                    simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getFriendName())));
+
 
             indexSpecs.add(new IndexSpec()
                 .setName("spec.pubDate")

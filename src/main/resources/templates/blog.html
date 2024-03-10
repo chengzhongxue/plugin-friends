@@ -8,6 +8,7 @@
     </head>
 </th:block>
 <th:block th:fragment="content">
+    <script th:src="@{/plugins/plugin-friends/assets/static/js/charts/frappe-charts@1.6.2.min.umd.js}" id="axios.min-js"></script>
     <main class="main" th:with="blogInfo = ${friend}">
         <div class="blog-detail-main">
             <header class="header-info">
@@ -58,7 +59,8 @@
             </header>
         </div>
 
-        <th:block th:with="posts = ${friendFinder.listByUrl(1,100,blogInfo.spec.link)}">
+
+        <th:block th:with="posts = ${friendFinder.listByFriendName(1,100,blogInfo.metadata.name)}">
             <th:block th:if="${not #lists.isEmpty(posts.items)}">
                 <footer class="blog-detail-summary">
                     <div class="flex-item one">
@@ -79,14 +81,12 @@
                     </div>
                 </footer>
 
-                <!-- <div class="blog-detail-charts">
+                <div class="blog-detail-charts">
                     <div class="charts-title">
                         <h4>数据统计</h4>
                     </div>
-                    <div id="access-charts"></div>
                     <div id="publish-charts"></div>
-                </div> -->
-
+                </div>
 
                 <div class="blog-detail-articles">
                     <div class="articles-title">
@@ -119,6 +119,8 @@
             </th:block>
         </th:block>
 
+
+
         <div class="blog-detail-random-blogs">
             <div class="blogs-title">
                 <h4>随机链接</h4>
@@ -149,6 +151,47 @@
             </div>
         </div>
     </main>
+
+    <script  th:inline="javascript">
+        /*<![CDATA[*/
+
+        let publishChart = new frappe.Chart( "#publish-charts", { // or DOM element
+            data: {
+                labels: /*[[${yearlyPublishData.months}]]*/ 'default',
+
+                datasets: [
+                    {
+                        name: "篇文章", chartType: 'line',
+                        values: /*[[${yearlyPublishData.postCounts}]]*/ 'default'
+                    }
+                ],
+            },
+
+            title: "最近一年文章收录统计",
+            type: 'bar', // or 'bar', 'line', 'pie', 'percentage'
+            height: 200,
+            colors: ['#cc6cf6'],
+
+            axisOptions: {
+                xIsSeries: true,   //default:false
+                xAxisMode: "tick",
+            },
+
+            lineOptions: {
+                hideDots: 0,   //default:0
+                regionFill: 1, // default: 0
+                heatline: 1, // default: 0
+                dotSize: 6, // default: 4
+            },
+
+            tooltipOptions: {
+                formatTooltipX: d => (d + '').toUpperCase(),
+                formatTooltipY: d => d,
+            }
+        });
+
+        /*]]>*/
+    </script>
 </th:block>
 
 </html>

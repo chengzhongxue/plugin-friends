@@ -12,15 +12,6 @@ spec:
           name: title
           validation: required
           value: '友链朋友圈'
-        - $formkit: code
-          name: menu_html
-          label: 菜单
-          height: 200px
-          language: html
-          value: <li> <a href="/friends" title="首页"> <span>首页</span> </a> </li>
-                <li> <a href="/blogs" title="博客广场"> <span>博客广场</span> </a> </li>
-                <li> <a href="/blog-requests/add" title="提交博客"> <span>提交博客</span> </a> </li>
-                <li> <a href="/blog-requests" title="审核结果"> <span>审核结果</span> </a> </li>
         - $formkit: text
           label: 朋友圈列表显示条数
           name: pageSize
@@ -70,3 +61,20 @@ spec:
               name: domain
               label: 本站域名
               help: 填写站点域名，如：moony.la
+        - $formkit: code
+          name: menu_html
+          label: 菜单
+          height: 200px
+          language: html
+          value: <li> <a href="/friends" title="首页"> <span>首页</span> </a> </li>
+            <li> <a href="/blogs" title="博客广场"> <span>博客广场</span> </a> </li>
+            <li> <a href="/blog-requests/add" title="提交博客"> <span>提交博客</span> </a> </li>
+            <li> <a href="/blog-requests" title="审核结果"> <span>审核结果</span> </a> </li>
+        - $formkit: code
+          name: footer_html
+          label: 菜单
+          height: 200px
+          language: html
+          value: <div class="footer-contact">
+                  特别声明：包含政治、色情、赌博与暴力等违规内容的博客，一经发现，将被永久移出收录名单！举报违规博客。
+                </div>

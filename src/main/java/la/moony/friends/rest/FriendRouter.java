@@ -1,6 +1,7 @@
 package la.moony.friends.rest;
 
 import la.moony.friends.finders.FriendFinder;
+import la.moony.friends.service.FriendPostService;
 import la.moony.friends.vo.BlogVo;
 import la.moony.friends.vo.FriendPostVo;
 import la.moony.friends.vo.FriendVo;
@@ -41,6 +42,8 @@ public class FriendRouter {
 
     private final ReactiveSettingFetcher settingFetcher;
 
+    private final FriendPostService friendPostService;
+
     @Bean
     RouterFunction<ServerResponse> friendTemplateRoute() {
         return RouterFunctions.route().GET("/friends",this::handlerFunction)
@@ -62,7 +65,8 @@ public class FriendRouter {
                 java.util.Map.of("friends", friendPostList(request),
                     "title",getFriendTitle(),
                     "statistical",getStatistical(),
-                    "friend_menu",getMenu())));
+                    "friend_menu",getMenu(),
+                    "footer_html",getFooter())));
     }
 
     private Mono<ServerResponse> handlerBlogsDefault(ServerRequest request) {
@@ -71,7 +75,8 @@ public class FriendRouter {
                 java.util.Map.of("blogs",blogList(request),
                     "statistical",getStatistical(),
                     "title",getFriendTitle(),
-                    "friend_menu",getMenu())));
+                    "friend_menu",getMenu(),
+                    "footer_html",getFooter())));
     }
 
     private Mono<ServerResponse> handlerBlogDefault(ServerRequest request) {
@@ -79,14 +84,18 @@ public class FriendRouter {
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "blog")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
                 java.util.Map.of("friend",friendFinder.friendGet(friendName),
+                    "yearlyPublishData",friendPostService.yearlyPublishData(friendName),
                     "title",getFriendTitle(),
-                    "friend_menu",getMenu())));
+                    "friend_menu",getMenu(),
+                    "footer_html",getFooter())));
     }
 
     private Mono<ServerResponse> handlerBlogRequestsAddDefault(ServerRequest request) {
         return  templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "blogs-add")
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
-                java.util.Map.of("title",getFriendTitle(),"friend_menu",getMenu())));
+                java.util.Map.of("title",getFriendTitle(),
+                    "friend_menu",getMenu(),
+                    "footer_html",getFooter())));
     }
 
     private Mono<ServerResponse> handlerBlogRequestsDetailDefault(ServerRequest request) {
@@ -95,7 +104,8 @@ public class FriendRouter {
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
                 java.util.Map.of("title",getFriendTitle(),
                     "blogRequestDetail",friendFinder.friendGet(friendName),
-                    "friend_menu",getMenu())));
+                    "friend_menu",getMenu(),
+                    "footer_html",getFooter())));
     }
 
     private Mono<ServerResponse> handlerBlogRequestsDefault(ServerRequest request) {
@@ -103,7 +113,8 @@ public class FriendRouter {
             .flatMap( templateName -> ServerResponse.ok().render(templateName,
                 java.util.Map.of("title",getFriendTitle(),
                     "blogRequests",blogRequestList(request),
-                    "friend_menu",getMenu())));
+                    "friend_menu",getMenu(),
+                    "footer_html",getFooter())));
     }
 
 
@@ -124,6 +135,13 @@ public class FriendRouter {
                 + "title=\"博客广场\"><span>博客广场</span></a></li><li><a href=\"/blog-requests/add\" "
                 + "title=\"提交博客\"><span>提交博客</span></a></li><li><a href=\"/blog-requests\" "
                 + "title=\"审核结果\"><span>审核结果</span></a></li>"));
+    }
+
+    Mono<String> getFooter() {
+        return this.settingFetcher.get("base").map(
+            setting -> setting.get("footer_html").asText("<div class=\"footer-contact\">\n"
+                + "                  特别声明：包含政治、色情、赌博与暴力等违规内容的博客，一经发现，将被永久移出收录名单！举报违规博客。\n"
+                + "                </div>"));
     }
 
     private Mono<UrlContextListResult<FriendVo>> blogRequestList(ServerRequest request) {

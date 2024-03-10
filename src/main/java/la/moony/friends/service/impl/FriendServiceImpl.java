@@ -9,12 +9,18 @@ import la.moony.friends.vo.FriendsConfig;
 import la.moony.friends.vo.RSSInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ConfigMap;
 import run.halo.app.extension.ExtensionClient;
+import run.halo.app.extension.ListOptions;
+import run.halo.app.extension.router.selector.FieldSelector;
 import run.halo.app.infra.utils.JsonUtils;
 import java.util.List;
+
+import static run.halo.app.extension.index.query.QueryFactory.all;
+import static run.halo.app.extension.index.query.QueryFactory.equal;
 
 @Component
 public class FriendServiceImpl  implements FriendService {
@@ -38,14 +44,11 @@ public class FriendServiceImpl  implements FriendService {
     public void processNewRequest() {
         try {
 
-            List<Friend> friends = client.list(Friend.class, friend -> {
-                  if (friend.getSpec().getSubmittedType()!=null){
-                      return friend.getSpec().getSubmittedType().equals(
-                          Friend.Spec.SubmittedType.SUBMITTED);
-                  }else {
-                      return false;
-                  }
-                }, null);
+
+
+            List<Friend> friends = client.listAll(Friend.class, new ListOptions().setFieldSelector(
+                    FieldSelector.of(equal("spec.submittedType",Friend.Spec.SubmittedType.SUBMITTED.name()))),
+                Sort.by("metadata.creationTimestamp").descending());
             friends.forEach(friend -> {
                 String rssUrl = friend.getSpec().getRssUrl();
                 log.info("start to process blog request, rssAddress: {}", friend.getSpec().getRssUrl());

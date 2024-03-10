@@ -7,6 +7,7 @@ import la.moony.friends.extension.FriendPost;
 import la.moony.friends.service.BlogCrawlerService;
 import la.moony.friends.service.FriendPostService;
 import la.moony.friends.util.CommonUtils;
+import la.moony.friends.vo.MonthPublish;
 import la.moony.friends.vo.RSSInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -21,7 +22,17 @@ import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.extension.index.query.QueryFactory;
 import run.halo.app.extension.router.selector.FieldSelector;
 import java.time.Instant;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static run.halo.app.extension.index.query.QueryFactory.all;
 import static run.halo.app.extension.index.query.QueryFactory.and;
@@ -168,6 +179,52 @@ public class FriendPostServiceImpl implements FriendPostService {
             log.info("no new posts saved, blogDomainName: {}", finalUrl);
             return Mono.just(false);
         }
+    }
+
+    public Mono<Map<String, Object>> yearlyPublishData(String friendName) {
+        List<String> recentYearMonths = getRecentYearMonths();
+        var listOptions = new ListOptions();
+        listOptions.setFieldSelector(FieldSelector.of(equal("spec.friendName", friendName)));
+        Flux<FriendPost> friendPostFlux = client.listAll(FriendPost.class, listOptions, null);
+
+        return Flux.fromIterable(recentYearMonths)
+            .concatMap(month -> countPostsForMonthAsync(friendPostFlux, month)
+                .map(result -> new AbstractMap.SimpleEntry<>(month, result)))
+            .collectList()
+            .map(results -> {
+                results.sort(Comparator.comparing(entry -> recentYearMonths.indexOf(entry.getKey())));
+
+                List<String> months = results.stream().map(Map.Entry::getKey).collect(Collectors.toList());
+                List<Long> postCounts = results.stream().map(entry -> entry.getValue().getCount()).collect(Collectors.toList());
+                Map<String, Object> map = new HashMap<>();
+                map.put("months", months);
+                map.put("postCounts", postCounts);
+                return map;
+            });
+    }
+
+    public Mono<MonthPublish> countPostsForMonthAsync(Flux<FriendPost> friendPostFlux, String month) {
+        return friendPostFlux
+            .filter(post -> {
+                Instant postInstant = post.getSpec().getPubDate();
+                YearMonth postYearMonth = YearMonth.from(postInstant.atZone(ZoneId.systemDefault()));
+                return postYearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(month);
+            })
+            .count()
+            .map(count -> new MonthPublish(month, count));
+    }
+
+    public List<String> getRecentYearMonths() {
+        List<String> yearMonths = new ArrayList<>();
+        YearMonth currentYearMonth = YearMonth.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
+        for (int i = 11; i >= 0; i--) {
+            YearMonth targetYearMonth = currentYearMonth.minusMonths(i);
+            String formattedMonth = targetYearMonth.format(formatter);
+            yearMonths.add(formattedMonth);
+        }
+        return yearMonths;
     }
 
 
