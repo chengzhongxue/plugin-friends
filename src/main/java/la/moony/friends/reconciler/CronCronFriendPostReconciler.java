@@ -62,6 +62,7 @@ public class CronCronFriendPostReconciler  implements Reconciler<Reconciler.Requ
                 } else {
                     String cron = spec.getCron();
                     String timezone = spec.getTimezone();
+                    boolean autoverify = spec.isAutoverify();
                     ZoneId zoneId = ZoneId.systemDefault();
                     if (timezone != null) {
                         try {
@@ -97,7 +98,9 @@ public class CronCronFriendPostReconciler  implements Reconciler<Reconciler.Requ
 
                                 this.blogStatusService.detectBlogStatus();
 
-                                this.friendService.processNewRequest();
+                                if (autoverify){
+                                    this.friendService.processNewRequest();
+                                }
 
                                 this.friendPostService.synchronizationFriend().subscribe();
 

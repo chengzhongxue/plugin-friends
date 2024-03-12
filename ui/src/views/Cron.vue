@@ -13,9 +13,10 @@ const initialFormState: CronFriendPost = {
     creationTimestamp: ""
   },
   spec: {
-    cron: "@daily",
+    cron: "0 0 * * * *",
     timezone:"Asia/Shanghai",
     suspend: false,
+    autoverify: true,
     successfulRetainLimit: 0,
   },
   kind: "CronFriendPost",
@@ -40,17 +41,20 @@ const formSchema = ref(
       help: '定时获取RSS订阅数据'
     },
     {
+      $formkit: 'checkbox',
+      name: 'autoverify',
+      label: '是否启用自动审核提交的博客',
+      value: true,
+      help: '定时审核自动提交的订阅博客'
+    },
+    {
       $cmp: 'FormKit',
       props: {
-        type: 'select',
+        type: 'text',
         name: 'cron',
-        label: '计划',
-        options: [
-          {value: "@monthly", label: '每月（每月 1 号 0 点）'},
-          {value: "@weekly", label: '每周（每周第一天 的 0 点）'},
-          {value: "@daily", label: '每天（每天的 0 点）'},
-          {value: "@hourly", label: '每小时'},
-        ],
+        label: '定时表达式',
+        validation: 'required',
+        help: '定时任务表达式，请参考：https://moony.la/cron'
       }
     },
     {
@@ -67,8 +71,8 @@ const formSchema = ref(
     {
       $formkit: 'number',
       name: 'successfulRetainLimit',
-      label: '成功保留限制份数',
-      help: '设置之后会保留的数据条数，设置为 0 即不限制',
+      label: '成功保留限制条数',
+      help: '设置之后会保留的数据条数，设置为 0 即为5条',
       number: "integer",
       validation: 'required|number|min:0',
     },

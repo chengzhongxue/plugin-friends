@@ -32,6 +32,7 @@ public class CronFriendPost extends AbstractExtension {
         private String cron;
         private String timezone;
         private boolean suspend;
+        private boolean autoverify;
 
         @Schema(
             minimum = "0"

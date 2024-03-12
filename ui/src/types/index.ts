@@ -136,6 +136,7 @@ export interface CronFriendPostSpec {
   cron?: string;
   timezone?: string;
   suspend?: boolean;
+  autoverify?: boolean;
   successfulRetainLimit?: number;
 }
 
