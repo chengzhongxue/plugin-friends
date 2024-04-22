@@ -23,7 +23,7 @@
 * 内置模板，无需主题支持，但也可以通过主题自定义模板。
 
 ## 📃文档
-https://moony.la/docs/plugin-friends
+https://docs.kunkunyu.com/docs/plugin-friends
 
 ## 主题适配
 目前此插件为主题端提供了 `/friends` 路由，模板为 `friends.html`，也提供了 Finder API，可以将瞬间列表渲染到任何地方。
