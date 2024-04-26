@@ -193,7 +193,6 @@ public class FriendPostServiceImpl implements FriendPostService {
             .collectList()
             .map(results -> {
                 results.sort(Comparator.comparing(entry -> recentYearMonths.indexOf(entry.getKey())));
-
                 List<String> months = results.stream().map(Map.Entry::getKey).collect(Collectors.toList());
                 List<Long> postCounts = results.stream().map(entry -> entry.getValue().getCount()).collect(Collectors.toList());
                 Map<String, Object> map = new HashMap<>();

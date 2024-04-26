@@ -55,5 +55,5 @@ rules:
     resources: [ "friends","friendposts"]
     verbs: [ "create", "patch", "update", "delete", "deletecollection" ]
   - nonResourceURLs: [ "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/*",
-                       "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByLink/*" ]
+                       "/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByFriendName/*" ]
     verbs: [ "create" , "delete"]

@@ -62,13 +62,13 @@ public class FriendPostController {
      * @param name
      * @return
      */
-    @DeleteMapping("/delByLink/{name}")
-    public Mono<Void> delByLink(@PathVariable("name") String name) {
+    @DeleteMapping("/delByFriendName/{name}")
+    public Mono<Void> delByFriendName(@PathVariable("name") String name) {
 
         return client.get(Friend.class, name)
             .flatMap(friend -> client.listAll(FriendPost.class,
                 new ListOptions().setFieldSelector(
-                    FieldSelector.of(equal("spec.url",friend.getSpec().getLink()))
+                    FieldSelector.of(equal("spec.friendName",friend.getMetadata().getName()))
                 ), null)
                 .flatMap(friendPost -> client.delete(friendPost))
             .then());

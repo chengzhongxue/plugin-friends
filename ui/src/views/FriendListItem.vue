@@ -141,7 +141,7 @@ const handleDelete = (friend: Friend) => {
     onConfirm: async () => {
       try {
         await apiClient.delete(
-          `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByLink/${friend.metadata.name}`
+          `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByFriendName/${friend.metadata.name}`
         )
         await apiClient.delete(
           `/apis/friend.moony.la/v1alpha1/friends/${friend.metadata.name}`
@@ -167,7 +167,7 @@ const handleDeleteInBatch = () => {
 
         const promises = selectedFriends.value.map((friend) => {
           apiClient.delete(
-            `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByLink/${friend}`
+            `/apis/api.plugin.halo.run/v1alpha1/plugins/plugin-friends/friendPost/delByFriendName/${friend}`
           )
           return apiClient.delete(`/apis/friend.moony.la/v1alpha1/friends/${friend}`);
         });

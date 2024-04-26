@@ -9,7 +9,9 @@ spec:
     name: 困困鱼
     website: https://github.com/chengzhongxue
   logo: logo.png
-  homepage: https://github.com/chengzhongxue/plugin-friends
+  homepage: https://www.halo.run/store/apps/app-yISsV
+  repo: https://github.com/chengzhongxue/plugin-friends
+  issues: https://github.com/chengzhongxue/plugin-friends/issues
   configMapName: plugin-friends-configMap
   settingName: plugin-friends-settings
   displayName: "朋友圈"
