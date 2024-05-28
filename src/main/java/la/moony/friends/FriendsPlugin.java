@@ -5,6 +5,7 @@ import la.moony.friends.extension.Friend;
 import la.moony.friends.extension.FriendPost;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Component;
+import run.halo.app.extension.Scheme;
 import run.halo.app.extension.SchemeManager;
 import run.halo.app.extension.index.IndexSpec;
 import run.halo.app.plugin.BasePlugin;
@@ -42,7 +43,10 @@ public class FriendsPlugin extends BasePlugin {
             indexSpecs.add(new IndexSpec()
                 .setName("spec.submittedType")
                 .setIndexFunc(
-                    simpleAttribute(Friend.class, friend -> friend.getSpec().getSubmittedType().name())));
+                    simpleAttribute(Friend.class, friend -> {
+                        var submittedType =friend.getSpec().getSubmittedType();
+                        return submittedType == null ? null : submittedType.name();
+                    })));
             indexSpecs.add(new IndexSpec()
                 .setName("status.statusType")
                 .setIndexFunc(
@@ -146,8 +150,8 @@ public class FriendsPlugin extends BasePlugin {
 
     @Override
     public void stop() {
-        schemeManager.unregister(schemeManager.get(Friend.class));
-        schemeManager.unregister(schemeManager.get(FriendPost.class));
-        schemeManager.unregister(schemeManager.get(CronFriendPost.class));
+        schemeManager.unregister(Scheme.buildFromType(Friend.class));
+        schemeManager.unregister(Scheme.buildFromType(FriendPost.class));
+        schemeManager.unregister(Scheme.buildFromType(CronFriendPost.class));
     }
 }
