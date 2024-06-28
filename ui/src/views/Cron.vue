@@ -5,7 +5,7 @@ import type {CronFriendPost, CronFriendPostList} from "@/types";
 import cloneDeep from "lodash.clonedeep";
 import apiClient from "@/utils/api-client";
 
-const Se = "cron-default"
+const Se = "cron-friends-default"
 
 const initialFormState: CronFriendPost = {
   metadata: {
