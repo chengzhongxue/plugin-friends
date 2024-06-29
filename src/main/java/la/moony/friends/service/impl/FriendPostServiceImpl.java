@@ -98,7 +98,7 @@ public class FriendPostServiceImpl implements FriendPostService {
                 var listOptions = new ListOptions();
                 var query = equal("spec.link",blogPost.getSpec().getLink());
                 listOptions.setFieldSelector(FieldSelector.of(query));
-                  return client.listAll(FriendPost.class,listOptions, null).count()
+                  return client.listAll(FriendPost.class,listOptions, Sort.by("spec.pubDate")).count()
                     .map(Long::intValue).flatMap(size->{
                         if (!(size>0)){
                             FriendPost friendPost = new FriendPost();
@@ -185,7 +185,7 @@ public class FriendPostServiceImpl implements FriendPostService {
         List<String> recentYearMonths = getRecentYearMonths();
         var listOptions = new ListOptions();
         listOptions.setFieldSelector(FieldSelector.of(equal("spec.friendName", friendName)));
-        Flux<FriendPost> friendPostFlux = client.listAll(FriendPost.class, listOptions, null);
+        Flux<FriendPost> friendPostFlux = client.listAll(FriendPost.class, listOptions, Sort.by("spec.pubDate"));
 
         return Flux.fromIterable(recentYearMonths)
             .concatMap(month -> countPostsForMonthAsync(friendPostFlux, month)
