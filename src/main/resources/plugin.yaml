@@ -2,6 +2,8 @@ apiVersion: plugin.halo.run/v1alpha1
 kind: Plugin
 metadata:
   name: plugin-friends
+  annotations:
+    "store.halo.run/app-id": "app-yISsV"
 spec:
   enabled: true
   requires: ">=2.15.0"
