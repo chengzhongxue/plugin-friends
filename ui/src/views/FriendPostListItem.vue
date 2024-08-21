@@ -147,7 +147,7 @@ function onKeywordChange() {
     <template #header>
       <div class="block w-full bg-gray-50 px-4 py-3">
         <div class="relative flex flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center" >
-          <div class="hidden items-center sm:flex" >
+          <div class="hidden items-center sm:flex" v-permission="['plugin:friends:manage']">
             <input
               v-model="checkedAll"
               type="checkbox"
@@ -242,7 +242,8 @@ function onKeywordChange() {
         <table class="w-full text-sm text-left text-gray-500">
           <thead class="text-xs text-gray-700 uppercase bg-gray-50">
              <tr>
-               <th scope="col" class="px-4 py-3"><div class="w-max flex items-center"> </div></th>
+               <th v-permission="['plugin:friends:manage']" 
+                   scope="col" class="px-4 py-3"><div class="w-max flex items-center"> </div></th>
                <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">作者名称 </div></th>
                <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">站点链接 </div></th>
                <th scope="col" class="px-4 py-3"><div class="w-max flex items-center">文章标题 </div></th>
@@ -253,7 +254,8 @@ function onKeywordChange() {
           </thead>
           <tbody>
              <tr v-for="friendPost in friendPosts" class="border-b last:border-none hover:bg-gray-100">
-               <td class="px-4 py-4 ">
+               <td class="px-4 py-4" 
+                   v-permission="['plugin:friends:manage']">
                  <input
                    v-model="selectedFriendPosts"
                    :value="friendPost.metadata.name"

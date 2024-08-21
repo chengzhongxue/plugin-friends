@@ -294,7 +294,7 @@ function onKeywordChange() {
     <template #header>
       <div class="block w-full bg-gray-50 px-4 py-3">
         <div class="relative flex flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center">
-          <div class="hidden items-center sm:flex">
+          <div class="hidden items-center sm:flex" v-permission="['plugin:friends:manage']">
             <input
               v-model="checkedAll"
               type="checkbox"
@@ -478,16 +478,17 @@ function onKeywordChange() {
             <VEntity
               :is-selected="selectedFriends.includes(friend.metadata.name)"
             >
-              <template #checkbox>
-                <input
-                  v-model="selectedFriends"
-                  :value="friend.metadata.name"
-                  class="h-4 w-4 rounded border-gray-300 text-indigo-600"
-                  name="post-checkbox"
-                  type="checkbox"
-                />
-              </template>
-
+                <template #checkbox>
+                  <HasPermission :permissions="['plugin:friends:manage']">
+                  <input
+                    v-model="selectedFriends"
+                    :value="friend.metadata.name"
+                    class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                    name="post-checkbox"
+                    type="checkbox"
+                  />
+                  </HasPermission>
+                </template>
               <template #start>
                 <VEntityField>
                   <template #description>
@@ -583,16 +584,18 @@ function onKeywordChange() {
                 />
               </template>
               <template #dropdownItems >
-                <VDropdownItem v-if="friend.spec.submittedType != 'SYSTEM_CHECK_VALID' && friend.spec.submittedType != 'APPROVED'" 
-                               v-permission="['plugin:friends:manage']" @click="handleOpenAuditModal(friend)">
-                  审核
-                </VDropdownItem>
-                <VDropdownItem v-permission="['plugin:friends:manage']" @click="handleOpenCreateModal(friend)">
-                  编辑
-                </VDropdownItem>
-                <VDropdownItem v-permission="['plugin:friends:manage']" type="danger" @click="handleDelete(friend)">
-                  删除
-                </VDropdownItem>
+                <HasPermission :permissions="['plugin:friends:manage']">
+                  <VDropdownItem v-if="friend.spec.submittedType != 'SYSTEM_CHECK_VALID' && friend.spec.submittedType != 'APPROVED'"
+                                 @click="handleOpenAuditModal(friend)">
+                    审核
+                  </VDropdownItem>
+                  <VDropdownItem @click="handleOpenCreateModal(friend)">
+                    编辑
+                  </VDropdownItem>
+                  <VDropdownItem type="danger" @click="handleDelete(friend)">
+                    删除
+                  </VDropdownItem>
+                </HasPermission>
               </template>
             </VEntity>
           </li>
