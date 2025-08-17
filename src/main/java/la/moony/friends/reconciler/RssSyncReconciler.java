@@ -69,7 +69,7 @@ public class RssSyncReconciler implements Reconciler<RssSyncReconciler.Request>,
         int sum = request.sum();
         List<String> disableSyncList = request.disableSyncList();
         var linkName = link.getMetadata().getName();
-        String rssUri = getRss(link);
+        String rssUrl = getRss(link);
         boolean isContains = false;
         if (ObjectUtils.isNotEmpty(disableSyncList)) {
             isContains = disableSyncList.contains(linkName);
@@ -80,9 +80,9 @@ public class RssSyncReconciler implements Reconciler<RssSyncReconciler.Request>,
         metadata.setName(syncLogName);
         newRssFeedSyncLog.setMetadata(metadata);
         newRssFeedSyncLog.setLinkName(linkName);
-        if (StringUtils.isNotEmpty(rssUri) && !isContains) {
+        if (StringUtils.isNotEmpty(rssUrl) && !isContains) {
             tryToSynchronizeFriendPost(newRssFeedSyncLog, link, sum);
-        }else if (StringUtils.isEmpty(rssUri)) {
+        }else if (StringUtils.isEmpty(rssUrl)) {
             newRssFeedSyncLog.setSyncTime(Instant.now());
             newRssFeedSyncLog.setState(RssFeedSyncLog.RssFeedSyncLogState.nolink);
             newRssFeedSyncLog.setFailureReason("No RSS link");
@@ -109,18 +109,28 @@ public class RssSyncReconciler implements Reconciler<RssSyncReconciler.Request>,
 
     public String getRss(Link link) {
         var annotations = nullSafeAnnotations(link);
-        String rssUri = annotations.getOrDefault("rss_uri","");
-        String isRequest = annotations.getOrDefault("is_request","");
-        if (StringUtils.isEmpty(rssUri) && StringUtils.isEmpty(isRequest)) {
+
+        //处理旧数据 rss_uri
+        String rssUri = annotations.get("rss_uri");
+
+        String rssUrl = annotations.get("rss_url");
+        String isRequest = annotations.get("is_request");
+        if ((StringUtils.isEmpty(rssUrl) && StringUtils.isEmpty(isRequest)) || StringUtils.isNotEmpty(rssUri)) {
             String linkRss = LinkRequest.getLinkRss(link.getSpec().getUrl());
-            annotations.put("is_request","true");
-            if (StringUtils.isNotEmpty(linkRss)) {
-                annotations.put("rss_uri",linkRss);
+            if (StringUtils.isNotEmpty(rssUri)) {
+                linkRss = rssUri;
+                annotations.remove("rss_uri");
+                annotations.put("rss_url", rssUri);
+            }else {
+                annotations.put("is_request","true");
+                if (StringUtils.isNotEmpty(linkRss)) {
+                    annotations.put("rss_url",linkRss);
+                }
             }
             updateLink(link);
             return linkRss;
         }
-        return rssUri;
+        return rssUrl;
     }
 
 
@@ -133,14 +143,14 @@ public class RssSyncReconciler implements Reconciler<RssSyncReconciler.Request>,
     private void tryToSynchronizeFriendPost(RssFeedSyncLog syncLog, Link link, int sum) {
         var linkName = link.getMetadata().getName();
         var annotations = nullSafeAnnotations(link);
-        var rssUri = annotations.get("rss_uri");
+        var rssUrl = annotations.get("rss_url");
 
         CronFriendPost cron = new CronFriendPost();
         var spec = new CronFriendPost.CronSpec();
         spec.setSuccessfulRetainLimit(5);
         cron.setSpec(spec);
         syncLog.setSyncTime(Instant.now());
-        List<FriendPost> friendPostList = fetchFriendPost(rssUri, sum, syncLog);
+        List<FriendPost> friendPostList = fetchFriendPost(rssUrl, sum, syncLog);
         
         // 即使获取失败也继续处理
         if (friendPostList != null && !friendPostList.isEmpty()) {

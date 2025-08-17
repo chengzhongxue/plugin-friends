@@ -91,7 +91,7 @@ const { mutate:save, isLoading:saveIsLoading } = useMutation({
 
 <template>
   <Transition mode="out-in" name="fade">
-    <div class="bg-white p-4">
+    <div class=":uno: bg-white p-4">
       <div>
         <FormKit
           id="cron-setting-form"
@@ -125,7 +125,7 @@ const { mutate:save, isLoading:saveIsLoading } = useMutation({
             label="时区"
             :options="[
                {
-                 value: 'Asia/Shanghai', 
+                 value: 'Asia/Shanghai',
                  label: 'Asia/Shanghai (GMT+08:00)'
                },
             ]"
@@ -144,8 +144,8 @@ const { mutate:save, isLoading:saveIsLoading } = useMutation({
           ></LinkFormKit>
         </FormKit>
       </div>
-      <div v-permission="['plugin:friends:manage']" class="pt-5">
-        <div class="flex justify-start">
+      <div v-permission="['plugin:friends:manage']" class=":uno: pt-5">
+        <div class=":uno: flex justify-start">
           <VButton
             :loading="saveIsLoading"
             :disabled="cronIsLoading"

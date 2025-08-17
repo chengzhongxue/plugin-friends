@@ -8,6 +8,6 @@ spec:
     kind: Link
   formSchema:
     - $formkit: "url"
-      name: "rss_uri"
+      name: "rss_url"
       label: "RSS 地址"
 

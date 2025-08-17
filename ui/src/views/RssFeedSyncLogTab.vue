@@ -47,7 +47,7 @@ const {
     keyword,
   ],
   queryFn: async () => {
-    
+
     const { data } = await friendsApiClient.friendPost.listRssSyncLogs({
       page: page.value,
       size: size.value,
@@ -67,27 +67,27 @@ const {
 
 </script>
 <template>
-  <VCard :body-class="['!p-0']">
+  <VCard :body-class="[':uno: !p-0']">
     <template #header>
-      <div class="block w-full bg-gray-50 px-4 py-3">
+      <div class=":uno: block w-full bg-gray-50 px-4 py-3">
         <div
-          class="relative flex h-9 flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center"
+          class=":uno: relative flex h-9 flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center"
         >
-          <div class="flex w-full flex-1 items-center sm:w-auto">
+          <div class=":uno: flex w-full flex-1 items-center sm:w-auto">
             <SearchInput
               v-model="keyword"
             />
           </div>
-          <VSpace spacing="lg" class="flex-wrap">
-            <div class="flex flex-row gap-2">
+          <VSpace spacing="lg" class=":uno: flex-wrap">
+            <div class=":uno: flex flex-row gap-2">
               <div
-                class="group cursor-pointer rounded p-1 hover:bg-gray-200"
+                class=":uno: group cursor-pointer rounded p-1 hover:bg-gray-200"
                 @click="refetch()"
               >
                 <IconRefreshLine
                   v-tooltip="'刷新'"
-                  :class="{ 'animate-spin text-gray-900': isFetching }"
-                  class="h-4 w-4 text-gray-600 group-hover:text-gray-900"
+                  :class="{ ':uno: animate-spin text-gray-900': isFetching }"
+                  class=":uno: h-4 w-4 text-gray-600 group-hover:text-gray-900"
                 />
               </div>
             </div>
