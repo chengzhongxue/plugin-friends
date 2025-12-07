@@ -8,6 +8,7 @@ import {
   VAvatar,
   VDropdown,
   VEntity,
+  VEntityContainer,
   VEntityField,
 } from "@halo-dev/components";
 import { useQuery } from "@tanstack/vue-query";
@@ -107,13 +108,13 @@ function onDropdownShow() {
 <template>
   <VDropdown ref="dropdown" :classes="['!p-0']" @show="onDropdownShow">
     <div
-      class="flex cursor-pointer select-none items-center text-sm text-gray-700 hover:text-black"
-      :class="{ 'font-semibold text-gray-700': modelValue !== undefined }"
+      class=":uno: flex cursor-pointer select-none items-center text-sm text-gray-700 hover:text-black"
+      :class="{ ':uno: font-semibold text-gray-700': modelValue !== undefined }"
     >
-      <span v-if="!selectedLink" class="mr-0.5">
+      <span v-if="!selectedLink" class=":uno: mr-0.5">
         {{ label }}
       </span>
-      <span v-else class="mr-0.5">
+      <span v-else class=":uno: mr-0.5">
         {{ label }}：{{ selectedLink.spec.displayName }}
       </span>
       <span>
@@ -121,8 +122,8 @@ function onDropdownShow() {
       </span>
     </div>
     <template #popper>
-      <div class="h-96 w-80">
-        <div class="border-b border-b-gray-100 bg-white p-4">
+      <div class=":uno: h-96 w-80">
+        <div class=":uno: border-b border-b-gray-100 bg-white p-4">
           <FormKit
             id="linkFilterDropdownInput"
             v-model="keyword"
@@ -131,36 +132,31 @@ function onDropdownShow() {
           ></FormKit>
         </div>
         <div>
-          <ul
-            class="box-border h-full w-full divide-y divide-gray-100"
-            role="list"
-          >
-            <li
+          <VEntityContainer>
+            <VEntity
               v-for="link in links"
               :key="link.metadata.name"
-              class="cursor-pointer"
+              :is-selected="modelValue === link.metadata.name"
               @click="handleSelect(link)"
             >
-              <VEntity :is-selected="modelValue === link.metadata.name">
-                <template #start>
-                  <VEntityField>
-                    <template #description>
-                      <VAvatar
-                        :key="link.metadata.name"
-                        :alt="link.spec.displayName"
-                        :src="link.spec.logo"
-                        size="md"
-                      ></VAvatar>
-                    </template>
-                  </VEntityField>
-                  <VEntityField
-                    :title="link.spec.displayName"
-                    :description="link.metadata.name"
-                  />
-                </template>
-              </VEntity>
-            </li>
-          </ul>
+              <template #start>
+                <VEntityField>
+                  <template #description>
+                    <VAvatar
+                      :key="link.metadata.name"
+                      :alt="link.spec.displayName"
+                      :src="link.spec.logo"
+                      size="md"
+                    ></VAvatar>
+                  </template>
+                </VEntityField>
+                <VEntityField
+                  :title="link.spec.displayName"
+                  :description="link.metadata.name"
+                />
+              </template>
+            </VEntity>
+          </VEntityContainer>
         </div>
       </div>
     </template>

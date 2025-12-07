@@ -20,7 +20,7 @@ const props = withDefaults(
   defineProps<{
     rssFeedSyncLog: ListedRssSyncLog;
   }>(),{
-    
+
   }
 );
 
@@ -82,10 +82,10 @@ const statusText = computed(() => {
           </div>
         </template>
         <template #description>
-          <div class="flex flex-col gap-1.5">
-            <VSpace class="flex-wrap !gap-y-1">
-              <span class="text-xs text-gray-500">
-                {{ rssFeedSyncLog.link.metadata.annotations?.["rss_uri"]}}
+          <div class=":uno: flex flex-col gap-1.5">
+            <VSpace class=":uno: flex-wrap !gap-y-1">
+              <span class=":uno: text-xs text-gray-500">
+                {{ rssFeedSyncLog.link.metadata.annotations?.["rss_url"]}}
               </span>
             </VSpace>
           </div>

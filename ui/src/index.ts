@@ -1,8 +1,9 @@
 import "./styles/index.css";
+import { VLoading } from "@halo-dev/components";
+import "uno.css";
 import { definePlugin } from "@halo-dev/console-shared";
-import Friend from "./views/Friend.vue";
 import RiBloggerLine from '~icons/ri/blogger-line';
-import { markRaw } from "vue";
+import { defineAsyncComponent, markRaw } from "vue";
 import {FriendsRssExtension} from "@/editor";
 import '@kunkunyu/fridends-rss';
 
@@ -14,7 +15,10 @@ export default definePlugin({
       route: {
         path: "/friends",
         name: "Friends",
-        component: Friend,
+        component: defineAsyncComponent({
+            loader: () => import("@/views/Friend.vue"),
+            loadingComponent: VLoading,
+        }),
         meta: {
           title: "朋友圈",
           searchable: true,

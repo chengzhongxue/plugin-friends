@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { 
+import {
   VCard,
   IconRefreshLine,
   Dialog,
@@ -51,7 +51,7 @@ function handleClearFilters() {
 const hasFilters = computed(() => {
   return (
     selectedLink.value ||
-    selectedSort.value 
+    selectedSort.value
   );
 });
 
@@ -65,7 +65,7 @@ const {
   queryFn: async () => {
 
     let linkName: string | undefined;
-    
+
     if (selectedLink.value) {
       linkName = selectedLink.value;
     }
@@ -117,16 +117,16 @@ const handleDelete = async (name: string) => {
 
 <template>
 
-  <VCard :body-class="['!p-0']" >
+  <VCard :body-class="[':uno: !p-0']" >
     <template #header>
-      <div class="block w-full bg-gray-50 px-4 py-3">
-        <div class="relative flex flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center" >
-          <div class="flex w-full flex-1 items-center sm:w-auto">
+      <div class=":uno: block w-full bg-gray-50 px-4 py-3">
+        <div class=":uno: relative flex flex-col flex-wrap items-start gap-4 sm:flex-row sm:items-center" >
+          <div class=":uno: flex w-full flex-1 items-center sm:w-auto">
             <SearchInput
               v-model="keyword"
             />
           </div>
-          <VSpace spacing="lg" class="flex-wrap">
+          <VSpace spacing="lg" class=":uno: flex-wrap">
               <FilterCleanButton
                 v-if="hasFilters"
                 @click="handleClearFilters"
@@ -139,28 +139,28 @@ const handleDelete = async (name: string) => {
                 v-model="selectedSort"
                 label="排序"
                 :items="[
-                      {
-                        label: '默认',
-                      },
-                      {
-                        label: '较近创建',
-                        value: 'spec.pubDate,desc',
-                      },
-                      {
-                        label: '较早创建',
-                        value: 'spec.pubDate,asc',
-                      },
-                    ]"
+                    {
+                      label: '默认',
+                    },
+                    {
+                      label: '较近创建',
+                      value: 'spec.pubDate,desc',
+                    },
+                    {
+                      label: '较早创建',
+                      value: 'spec.pubDate,asc',
+                    },
+                  ]"
               />
-              <div class="flex flex-row gap-2">
+              <div class=":uno: flex flex-row gap-2">
                 <div
-                  class="group cursor-pointer rounded p-1 hover:bg-gray-200"
+                  class=":uno: group cursor-pointer rounded p-1 hover:bg-gray-200"
                   @click="refetch()"
                 >
                   <IconRefreshLine
                     v-tooltip="'刷新'"
-                    :class="{ 'animate-spin text-gray-900': isFetching }"
-                    class="h-4 w-4 text-gray-600 group-hover:text-gray-900"
+                    :class="{ ':uno: animate-spin text-gray-900': isFetching }"
+                    class=":uno: h-4 w-4 text-gray-600 group-hover:text-gray-900"
                   />
                 </div>
               </div>
@@ -184,12 +184,12 @@ const handleDelete = async (name: string) => {
     </Transition>
 
     <Transition v-else appear name="fade">
-      <div class="m-0 md:m-4">
+      <div class=":uno: m-0 md:m-4">
         <ul class="thyuu-card">
           <li v-for="friendPost in friendPosts">
             <header>
               <img alt="" :src="friendPost.spec.logo"
-                   class="avatar avatar-24 photo" height="24" width="24" loading="lazy" decoding="async">
+                   class=":uno: avatar avatar-24 photo" height="24" width="24" loading="lazy" decoding="async">
               <span>{{friendPost.spec.author}}</span>
               <span></span>
             </header>
@@ -204,11 +204,11 @@ const handleDelete = async (name: string) => {
             </article>
             <footer>
               <time>{{formatDatetime(friendPost.spec.pubDate)}} 发布</time>
-              <a :href="friendPost.spec.postLink" class="button icon-views" target="_blank"
+              <a :href="friendPost.spec.postLink" class=":uno: button icon-views" target="_blank"
                  rel="noopener noreferrer">访问动态</a>
               <HasPermission :permissions="['plugin:friends:manage']">
                 <a @click="handleDelete(friendPost.metadata.name)"
-                   class="button icon-del im cursor-pointer">删除</a>
+                   class=":uno: button icon-del im cursor-pointer">删除</a>
               </HasPermission>
             </footer>
           </li>
@@ -225,5 +225,5 @@ const handleDelete = async (name: string) => {
       />
     </template>
   </VCard>
-  
+
 </template>
