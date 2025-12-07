@@ -60,6 +60,10 @@ public class FriendsPlugin extends BasePlugin {
         schemeManager.register(CronFriendPost.class);
         schemeManager.register(RssFeedSyncLog.class, indexSpecs -> {
             indexSpecs.add(new IndexSpec()
+                .setName("linkName")
+                .setIndexFunc(
+                    simpleAttribute(RssFeedSyncLog.class, rssFeedSyncLog -> rssFeedSyncLog.getLinkName())));
+            indexSpecs.add(new IndexSpec()
                 .setName("state")
                 .setIndexFunc(simpleAttribute(RssFeedSyncLog.class, rssFeedSyncLog -> {
                     var state = rssFeedSyncLog.getState();

@@ -15,18 +15,21 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import org.springframework.lang.NonNull;
 import run.halo.app.extension.*;
 import run.halo.app.extension.router.selector.FieldSelector;
 import run.halo.app.infra.utils.JsonUtils;
 import run.halo.app.theme.finders.Finder;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.domain.Sort.Order.asc;
@@ -128,50 +131,87 @@ public class FriendFinderImpl implements FriendFinder {
         }
         listOptions.setFieldSelector(FieldSelector.of(query));
         return client.listAll(Link.class, listOptions, defaultLinkSort())
-            .flatMapSequential(this::convertToListedVo)
             .collectList()
-            .map(links -> {
-                // 排序逻辑
-                return links.stream()
-                    .sorted(Comparator.comparing(link -> {
-                            List<FriendPostVo> friendPosts = link.getFriendPosts();
-                            if (friendPosts != null && !friendPosts.isEmpty()) {
-                                return friendPosts.get(0).getSpec().getPubDate();
-                            }
-                            return null;
-                        }, Comparator.nullsLast(Comparator.reverseOrder())
-                    )).collect(Collectors.toList());
+            .flatMap(links -> {
+                var linkNames = links.stream()
+                    .map(link -> link.getMetadata().getName())
+                    .collect(Collectors.toSet());
+
+                var getPosts = getAllFriendPostsByLinkNames(linkNames)
+                    .collectMultimap(post -> post.getSpec().getLinkName());
+
+                var getLogs = getByLinkNames(linkNames)
+                    .collectMap(syncLog -> syncLog.getLinkName());
+
+                return Mono.zip(getPosts, getLogs)
+                    .map(tuple -> {
+                        var posts = tuple.getT1();
+                        var logs = tuple.getT2();
+
+                        return links.stream()
+                            .map(link -> {
+                                LinkVo vo = LinkVo.from(link);
+                                String name = link.getMetadata().getName();
+
+                                var friendPosts = posts.get(name);
+                                if (friendPosts != null && !friendPosts.isEmpty()) {
+                                    // 按创建时间排序，最新的在最前面，仅保留前两条
+                                    var sortedRecords = friendPosts.stream()
+                                        .sorted(defaultFriendPostVoComparator())
+                                        .limit(2)
+                                        .toList();
+                                    vo.setFriendPosts(sortedRecords);
+                                } else {
+                                    vo.setFriendPosts(List.of());
+                                }
+                                vo.setRssFeedSyncLog(logs.get(name));
+                                return vo;
+                            })
+                            .sorted(Comparator.comparing((LinkVo link) -> {
+                                    List<FriendPostVo> friendPosts = link.getFriendPosts();
+                                    if (friendPosts != null && !friendPosts.isEmpty()) {
+                                        return friendPosts.get(0).getSpec().getPubDate();
+                                    }
+                                    return null;
+                                }, Comparator.nullsLast(Comparator.reverseOrder())
+                            ))
+                            .toList();
+                    });
             })
             .flatMapMany(Flux::fromIterable);
     }
 
-
-    public Mono<LinkVo> convertToListedVo(@NonNull Link link) {
-        Assert.notNull(link, "Link must not be null");
-        LinkVo linkVo = LinkVo.from(link);
-        linkVo.setFriendPosts(List.of());
-        return Mono.just(linkVo)
-            .flatMap(lp -> friendPostListBy(lp.getMetadata().getName())
-                .doOnNext(lp::setFriendPosts)
-                .thenReturn(lp)
-            ).flatMap(p -> {
-                String linkName = p.getMetadata().getName();
-                return client.fetch(RssFeedSyncLog.class,"sync-log-" + linkName)
-                    .doOnNext(p::setRssFeedSyncLog)
-                    .thenReturn(p);
-            })
-            .defaultIfEmpty(linkVo);
+    static Comparator<FriendPostVo> defaultFriendPostVoComparator() {
+        Function<FriendPostVo, Instant>
+            pubDate = friendPostVo -> friendPostVo.getSpec().getPubDate();
+        return Comparator.comparing(pubDate).reversed();
     }
 
-    public Mono<List<FriendPostVo>> friendPostListBy(String linkName) {
+    public Flux<RssFeedSyncLog> getByLinkNames(Collection<String> linkNames) {
+        if (CollectionUtils.isEmpty(linkNames)) {
+            return Flux.empty();
+        }
+        var listOptions = new ListOptions();
+        listOptions.setFieldSelector(FieldSelector.of(
+            and(
+                in("linkName", linkNames),
+                isNull("metadata.deletionTimestamp")
+            )
+        ));
+        return client.listAll(RssFeedSyncLog.class, listOptions, ExtensionUtil.defaultSort());
+    }
+
+
+    private Flux<FriendPostVo> getAllFriendPostsByLinkNames(Collection<String> linkNames) {
+        if (CollectionUtils.isEmpty(linkNames)) {
+            return Flux.empty();
+        }
         var listOptions = new ListOptions();
         var query = isNull("metadata.deletionTimestamp");
-        query = and(query, equal("spec.linkName", linkName));
+        query = and(query, in("spec.linkName", linkNames));
         listOptions.setFieldSelector(FieldSelector.of(query));
-        var pageRequest = PageRequestImpl.of(pageNullSafe(1), sizeNullSafe(2), defaultSort());
-        return client.listBy(FriendPost.class, listOptions, pageRequest)
-            .flatMap(friendPosts -> Flux.fromStream(friendPosts.get())
-                .map(FriendPostVo::from).collectList());
+        return client.listAll(FriendPost.class, listOptions, defaultSort())
+            .map(FriendPostVo::from);
     }
 
     Mono<LinkGroup> ungrouped() {
