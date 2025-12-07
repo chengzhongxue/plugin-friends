@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.time.Duration;
 import run.halo.app.extension.ListOptions;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.PageRequestImpl;
@@ -22,7 +23,9 @@ import run.halo.app.extension.router.selector.FieldSelector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static run.halo.app.extension.index.query.QueryFactory.and;
 import static run.halo.app.extension.index.query.QueryFactory.equal;
 import static run.halo.app.extension.index.query.QueryFactory.isNull;
 
@@ -89,8 +92,22 @@ public class RssFeedSyncLogServiceImpl implements RssFeedSyncLogService {
                     fieldSelector =  fieldSelector.andQuery(equal("metadata.name",name));
                 }
                 listOptions.setFieldSelector(fieldSelector);
-                return client.listAll(Link.class, listOptions, Sort.by("metadata.creationTimestamp"))
-                    .doOnNext(link -> eventPublisher.publishEvent(new RssFeedSyncEvent(this, link,sum,disableSyncList)))
+                Flux<Link> flux = Flux.range(1, Integer.MAX_VALUE)
+                    .concatMap(page -> client.listBy(
+                            Link.class,
+                            listOptions,
+                            PageRequestImpl.of(page, 50, Sort.by("metadata.creationTimestamp"))
+                        )
+                        .map(listResult -> listResult.get().collect(Collectors.toList()))
+                    )
+                    .takeWhile(list -> !list.isEmpty())
+                    .flatMapIterable(list -> list);
+
+                if (StringUtils.equals(name, "all")) {
+                    flux = flux.delayElements(Duration.ofMillis(500));
+                }
+                return flux
+                    .doOnNext(link -> eventPublisher.publishEvent(new RssFeedSyncEvent(this, link, sum, disableSyncList)))
                     .then();
             });
     }
