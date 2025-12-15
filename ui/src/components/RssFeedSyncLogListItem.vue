@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import {formatDatetime} from "@/utils/date";
 import {type ListedRssSyncLog, RssFeedSyncLogStateEnum} from "@/api/generated";
 import {
   VStatusDot,
@@ -13,6 +12,7 @@ import {
 import {friendsApiClient} from "@/api";
 import { useQueryClient } from "@tanstack/vue-query";
 import {computed} from "vue";
+import { utils } from '@halo-dev/ui-shared'
 
 const queryClient = useQueryClient();
 
@@ -113,7 +113,7 @@ const statusText = computed(() => {
       <VEntityField
         v-if="rssFeedSyncLog.log?.syncTime"
         v-tooltip="'同步时间'"
-        :description="formatDatetime(rssFeedSyncLog.log?.syncTime)+' 同步'"
+        :description="utils.date.format(rssFeedSyncLog.log?.syncTime)+' 同步'"
       ></VEntityField>
       <VEntityField v-if="rssFeedSyncLog.link.metadata.deletionTimestamp">
         <template #description>

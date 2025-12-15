@@ -21,7 +21,7 @@ import java.util.Optional;
 import static java.util.Comparator.comparing;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static org.springframework.data.domain.Sort.Order.desc;
-import static run.halo.app.extension.index.query.QueryFactory.*;
+import static run.halo.app.extension.index.query.Queries.*;
 import static run.halo.app.extension.router.QueryParamBuildUtil.sortParameter;
 
 public class FriendPostQuery extends SortableRequest {

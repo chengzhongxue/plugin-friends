@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import type {NodeViewProps, PMNode} from "@halo-dev/richtext-editor";
+import type {NodeViewProps} from "@halo-dev/richtext-editor";
 import { NodeViewWrapper } from "@halo-dev/richtext-editor";
 import { computed, onMounted, ref, watch } from "vue";
 import { VButton,VSpace,VDropdown,VEmpty} from "@halo-dev/components";
 import { friendsApiClient } from "@/api";
 import type { RssDetail } from "@/api/generated";
-import type { FriendsRss } from '@kunkunyu/fridends-rss';
+import type { FriendsRss } from '@kunkunyu/friends-rss';
 
 const selecteRssDetail = ref<RssDetail | undefined>();
 

@@ -25,7 +25,7 @@ import run.halo.app.extension.router.selector.FieldSelector;
 
 import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder;
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
-import static run.halo.app.extension.index.query.QueryFactory.isNull;
+import static run.halo.app.extension.index.query.Queries.isNull;
 
 @Component
 public class FriendEndpoint implements CustomEndpoint {

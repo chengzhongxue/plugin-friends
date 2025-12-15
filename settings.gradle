@@ -4,4 +4,6 @@ pluginManagement {
     }
 }
 rootProject.name = 'plugin-friends'
+include 'ui'
+include 'packages:friends-rss'
 

@@ -6,11 +6,12 @@ import la.moony.friends.extension.RssFeedSyncLog;
 import org.springframework.stereotype.Component;
 import run.halo.app.extension.Scheme;
 import run.halo.app.extension.SchemeManager;
-import run.halo.app.extension.index.IndexSpec;
+import run.halo.app.extension.index.IndexSpecs;
 import run.halo.app.plugin.BasePlugin;
 import run.halo.app.plugin.PluginContext;
 
-import static run.halo.app.extension.index.IndexAttributeFactory.simpleAttribute;
+import java.time.Instant;
+import java.util.Optional;
 
 @Component
 public class FriendsPlugin extends BasePlugin {
@@ -25,50 +26,70 @@ public class FriendsPlugin extends BasePlugin {
     @Override
     public void start() {
         schemeManager.register(FriendPost.class, indexSpecs -> {
-            indexSpecs.add(new IndexSpec()
-                .setName("spec.author")
-                .setIndexFunc(
-                    simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getAuthor())));
-            indexSpecs.add(new IndexSpec()
-                .setName("spec.title")
-                .setIndexFunc(
-                    simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getTitle())));
-            indexSpecs.add(new IndexSpec()
-                .setName("spec.description")
-                .setIndexFunc(
-                    simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getDescription())));
-            indexSpecs.add(new IndexSpec()
-                .setName("spec.postLink")
-                .setIndexFunc(
-                    simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getPostLink())));
-            indexSpecs.add(new IndexSpec()
-                .setName("spec.authorUrl")
-                .setIndexFunc(
-                    simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getAuthorUrl())));
-            indexSpecs.add(new IndexSpec()
-                .setName("spec.linkName")
-                .setIndexFunc(
-                    simpleAttribute(FriendPost.class, friendPost -> friendPost.getSpec().getLinkName())));
-            indexSpecs.add(new IndexSpec()
-                .setName("spec.pubDate")
-                .setIndexFunc(simpleAttribute(FriendPost.class, friendPost -> {
-                    var pubDate = friendPost.getSpec().getPubDate();
-                    return pubDate == null ? null : pubDate.toString();
-                }))
+            indexSpecs.add(IndexSpecs.<FriendPost, String>single("spec.author", String.class)
+                .indexFunc(
+                    friendPost -> Optional.ofNullable(friendPost.getSpec())
+                        .map(FriendPost.FriendPostSpec::getAuthor)
+                        .orElse(null)
+                )
+            );
+            indexSpecs.add(IndexSpecs.<FriendPost, String>single("spec.title", String.class)
+                .indexFunc(
+                    friendPost -> Optional.ofNullable(friendPost.getSpec())
+                        .map(FriendPost.FriendPostSpec::getTitle)
+                        .orElse(null)
+                )
+            );
+            indexSpecs.add(IndexSpecs.<FriendPost, String>single("spec.description", String.class)
+                .indexFunc(
+                    friendPost -> Optional.ofNullable(friendPost.getSpec())
+                        .map(FriendPost.FriendPostSpec::getDescription)
+                        .orElse(null)
+                )
+            );
+            indexSpecs.add(IndexSpecs.<FriendPost, String>single("spec.postLink", String.class)
+                .indexFunc(
+                    friendPost -> Optional.ofNullable(friendPost.getSpec())
+                        .map(FriendPost.FriendPostSpec::getPostLink)
+                        .orElse(null)
+                )
+            );
+            indexSpecs.add(IndexSpecs.<FriendPost, String>single("spec.authorUrl", String.class)
+                .indexFunc(
+                    friendPost -> Optional.ofNullable(friendPost.getSpec())
+                        .map(FriendPost.FriendPostSpec::getAuthorUrl)
+                        .orElse(null)
+                )
+            );
+            indexSpecs.add(IndexSpecs.<FriendPost, String>single("spec.linkName", String.class)
+                .indexFunc(
+                    friendPost -> Optional.ofNullable(friendPost.getSpec())
+                        .map(FriendPost.FriendPostSpec::getLinkName)
+                        .orElse(null)
+                )
+            );
+            indexSpecs.add(IndexSpecs.<FriendPost, Instant>single("spec.pubDate", Instant.class)
+                .indexFunc(
+                    friendPost -> Optional.ofNullable(friendPost.getSpec())
+                        .map(FriendPost.FriendPostSpec::getPubDate)
+                        .orElse(null)
+                )
             );
         });
         schemeManager.register(CronFriendPost.class);
         schemeManager.register(RssFeedSyncLog.class, indexSpecs -> {
-            indexSpecs.add(new IndexSpec()
-                .setName("linkName")
-                .setIndexFunc(
-                    simpleAttribute(RssFeedSyncLog.class, rssFeedSyncLog -> rssFeedSyncLog.getLinkName())));
-            indexSpecs.add(new IndexSpec()
-                .setName("state")
-                .setIndexFunc(simpleAttribute(RssFeedSyncLog.class, rssFeedSyncLog -> {
-                    var state = rssFeedSyncLog.getState();
-                    return state == null ? null : state.name();
-                })));
+            indexSpecs.add(IndexSpecs.<RssFeedSyncLog, String>single("linkName", String.class)
+                .indexFunc(
+                    rssFeedSyncLog -> Optional.ofNullable(rssFeedSyncLog.getLinkName())
+                        .orElse(null)
+                )
+            );
+            indexSpecs.add(IndexSpecs.<RssFeedSyncLog, RssFeedSyncLog.RssFeedSyncLogState>single("state", RssFeedSyncLog.RssFeedSyncLogState.class)
+                .indexFunc(
+                    rssFeedSyncLog -> Optional.ofNullable(rssFeedSyncLog.getState())
+                        .orElse(null)
+                )
+            );
         });
 
     }

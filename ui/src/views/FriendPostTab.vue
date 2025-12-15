@@ -12,10 +12,10 @@ import {
 } from "@halo-dev/components";
 import {useQuery, useQueryClient} from "@tanstack/vue-query";
 import {computed, ref, watch} from "vue";
-import { formatDatetime } from "@/utils/date";
 import {useRouteQuery} from "@vueuse/router";
 import LinkFilterDropdown from "@/components/filter/LinkFilterDropdown.vue";
 import {friendsApiClient, friendsCoreApiClient} from "@/api";
+import { utils } from '@halo-dev/ui-shared'
 
 const queryClient = useQueryClient();
 
@@ -203,7 +203,7 @@ const handleDelete = async (name: string) => {
               <p>{{friendPost.spec.description}}</p>
             </article>
             <footer>
-              <time>{{formatDatetime(friendPost.spec.pubDate)}} 发布</time>
+              <time>{{utils.date.format(friendPost.spec.pubDate)}} 发布</time>
               <a :href="friendPost.spec.postLink" class=":uno: button icon-views" target="_blank"
                  rel="noopener noreferrer">访问动态</a>
               <HasPermission :permissions="['plugin:friends:manage']">

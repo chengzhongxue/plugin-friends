@@ -25,7 +25,6 @@ import run.halo.app.theme.finders.Finder;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +32,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.domain.Sort.Order.asc;
-import static run.halo.app.extension.index.query.QueryFactory.*;
+import static run.halo.app.extension.ExtensionUtil.notDeleting;
+import static run.halo.app.extension.index.query.Queries.*;
 
 
 @Finder("friendFinder")
@@ -48,9 +48,9 @@ public class FriendFinderImpl implements FriendFinder {
 
     @Override
     public Flux<FriendPostVo> listAll() {
-        var listOptions = new ListOptions();
-        var query = all();
-        listOptions.setFieldSelector(FieldSelector.of(query));
+        var listOptions = ListOptions.builder()
+            .andQuery(notDeleting())
+            .build();
         return client.listAll(FriendPost.class, listOptions, defaultSort())
             .flatMap(this::getFriendPostVo);
     }
@@ -101,8 +101,7 @@ public class FriendFinderImpl implements FriendFinder {
 
     private Mono<ListResult<FriendPostVo>> pageFriendPost(ListOptions queryOptions, PageRequest page){
         var listOptions = new ListOptions();
-        var query = all();
-        listOptions.setFieldSelector(FieldSelector.of(query));
+        listOptions.setFieldSelector(FieldSelector.of(notDeleting()));
         var fieldSelector = queryOptions.getFieldSelector();
         if (fieldSelector != null) {
             listOptions.setFieldSelector(listOptions.getFieldSelector()

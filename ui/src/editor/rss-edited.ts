@@ -147,6 +147,9 @@ const FriendsRssExtension = Node.create({
           shouldShow: ({ state }: { state: EditorState }) => {
             return isActive(state, FriendsRssExtension.name);
           },
+          options: {
+            placement: "top-start",
+          },
           items: [
             {
               priority: 10,
