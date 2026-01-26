@@ -1,5 +1,6 @@
 package la.moony.friends.util;
 
+import java.text.BreakIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 
@@ -14,7 +15,15 @@ public class CommonUtils {
         if (text.length() <= length) {
             return text;
         } else {
-            text = text.substring(0, length);
+            BreakIterator bi = BreakIterator.getCharacterInstance();
+            bi.setText(text);
+            int bound = bi.first();
+            int prevBound = bound;
+            while (bound != BreakIterator.DONE && bound <= length) {
+                prevBound = bound;
+                bound = bi.next();
+            }
+            text = text.substring(0, prevBound);
             text += "...";
         }
         return text;
