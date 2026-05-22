@@ -5,7 +5,7 @@ import type {Link} from "@/api/generated";
 
 const handleSelectRemote = {
   search: async ({ keyword, page, size }: { keyword: string; page: number; size: number }) => {
-    const { data:links } = await axiosInstance.get("/apis/api.plugin.halo.run/v1alpha1/plugins/PluginLinks/links",{
+    const { data:links } = await axiosInstance.get("/apis/api.link.halo.run/v1alpha1/links",{
       params:{
         page: page,
         size: size,
@@ -26,7 +26,7 @@ const handleSelectRemote = {
     if (names.length === 0) {
       return [];
     }
-    const { data: findLinks } = await axiosInstance.get("/apis/api.plugin.halo.run/v1alpha1/plugins/PluginLinks/links",{
+    const { data: findLinks } = await axiosInstance.get("/apis/api.link.halo.run/v1alpha1/links",{
       params:{
         fieldSelector: [`metadata.name=(${names.join(",")})`]
       }

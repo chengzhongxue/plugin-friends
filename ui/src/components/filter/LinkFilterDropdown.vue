@@ -54,7 +54,7 @@ const { data: links } = useQuery({
   queryKey: ["core:links", debouncedKeyword],
   queryFn: async () => {
     const { data } = await axiosInstance.get<LinkList>(
-      "/apis/api.plugin.halo.run/v1alpha1/plugins/PluginLinks/links",
+      "/apis/api.link.halo.run/v1alpha1/links",
       {
         params: {
           page: 1,
